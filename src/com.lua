@@ -1,4 +1,4 @@
-local kit = require( pd.board() )
+local kit = require( "kit" )
 local list = require("list")
 local uart = uart
 local print = print
@@ -71,9 +71,10 @@ function test()
 		print("protocol input:")
 		prot = io.read()
 		recvList:pushfirst(prot)
-	elseif kit.button_clicked( kit.BTN_DOWN ) then
-		print("sendlist lenght: "..#recvList)
 	end
+--	elseif kit.button_clicked( kit.BTN_DOWN ) then
+--		print("sendlist lenght: "..#recvList)
+--	end
 end
 
 

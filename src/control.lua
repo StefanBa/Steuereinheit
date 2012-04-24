@@ -1,4 +1,4 @@
-local kit = require( pd.board() )
+local kit = require( "kit" )
 local cmd = require("cmd")
 
 module(..., package.seeall)								--koroutinen und loadstring braucht explizit _G
@@ -27,6 +27,17 @@ function get.settings(command)
 	local settings = cmd.getSettings(command)
 	for k,v in pairs(settings) do
 		com.write(k .. " = " .. v .. "\n\r")
+	end
+end
+
+function set.custom(id, value)
+	value = tonumber(value)
+	kit.d_out[id].custom = value
+end
+
+function set.mode(mode)
+	if mode == "normal" then
+		kit.reset()
 	end
 end
 
