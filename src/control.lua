@@ -49,6 +49,10 @@ function set.io(id, value)
 	end
 end
 
+function get.io(id)
+	com.write("ret.io" .. kit.IO[id].merge)
+end
+
 function set.mode(s)
 	if s == "run" then
 		mode = "run"

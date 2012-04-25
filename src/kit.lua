@@ -12,6 +12,8 @@ local adc_timer = 1
 local adc_f = 4
 local tsample
 
+local pwm_f = 50000
+
 btn_pressed = function( button )
   return pio.pin.getval( button ) == 0
 end
@@ -36,17 +38,17 @@ IO = {
 		DOUT4 = {adress = pio.PH_4},
 		
 		DIN0 = {adress = pio.PB_4},
-		--DIN1 = {adress = pio.PE_7},   --ADCPort!
+		DIN1 = {adress = pio.PB_7},
 		
 		AIN0 = {adress = 0},
 		AIN1 = {adress = 1},
 		AIN2 = {adress = 2},
 		AIN3 = {adress = 3},
 		
-		AOUT0 = {adress = pio.PD_0},
-		AOUT1 = {adress = pio.PD_1},
-		AOUT2 = {adress = pio.PD_2},
-		AOUT3 = {adress = pio.PD_3}
+		AOUT0 = {adress = 0, real = 50},
+		AOUT1 = {adress = 1, real = 50},
+		AOUT2 = {adress = 2, real = 50},
+		AOUT3 = {adress = 3, real = 50}
 		}
 
 mt = { __index = {real = 0, custom, merge = 0} }
@@ -57,17 +59,23 @@ end
 
 
 for i in pairs(IO) do
+
 	if i:find("DIN") then
 		pio.pin.setdir( pio.INPUT, IO[i].adress )
 		pio.pin.setpull( pio.PULLUP, IO[i].adress )
+	
 	elseif i:find("DOUT") then
 		pio.pin.setdir( pio.OUTPUT, IO[i].adress )
-	elseif i:find("AIN") then
-		adc.setblocking(IO[i].adress,0) -- no blocking on any channels
- 		adc.setsmoothing(IO[i].adress,adc_smoothing) -- set smoothing from adcsmoothing table
-  		adc.setclock(IO[i].adress, adc_f , adc_timer) -- get 4 samples per second, per channel	
-	else
 	
+	elseif i:find("AIN") then
+		adc.setblocking( IO[i].adress,0) -- no blocking on any channels
+ 		adc.setsmoothing( IO[i].adress, adc_smoothing ) -- set smoothing from adcsmoothing table
+  		adc.setclock( IO[i].adress, adc_f, adc_timer ) -- get 4 samples per second, per channel	
+	
+	else
+		pwm.setup( IO[i].adress, pwm_f, IO[i].real )
+		pwm.start( IO[i].adress )
+		print( "pwm_init", IO[i].adress,pwm_f )
 	end
 end
 
@@ -89,7 +97,7 @@ function update()
     			IO[i].real = tsample
     		end  		
 		else
-		
+			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )		
 		end
 	end
 end

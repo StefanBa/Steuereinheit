@@ -23,7 +23,7 @@ dofile("/rom/prog.lc")
 com.init()
 
 --term.clrscr()
-
+local ram, rammax = 0, 0
 
 while true do
 	local state, msg
@@ -39,10 +39,17 @@ while true do
 	kit.merge()
 	kit.update()
 	
-	term.print(1,2,string.format("ADC%02d : %04d\n", kit.IO.AIN0.adress, kit.IO.AIN0.real))
-	term.print(1,3,string.format("ADC%02d : %04d\n", kit.IO.AIN1.adress, kit.IO.AIN1.real))
-	term.print(1,4,string.format("ADC%02d : %04d\n", kit.IO.AIN2.adress, kit.IO.AIN2.real))
-	term.print(1,5,string.format("ADC%02d : %04d\n", kit.IO.AIN3.adress, kit.IO.AIN3.real))
+	--term.print(1,2,string.format("ADC%02d : %04d\n", kit.IO.AIN0.adress, kit.IO.AIN0.real))
+	--term.print(1,3,string.format("ADC%02d : %04d\n", kit.IO.AIN1.adress, kit.IO.AIN1.real))
+	--term.print(1,4,string.format("ADC%02d : %04d\n", kit.IO.AIN2.adress, kit.IO.AIN2.real))
+	--term.print(1,5,string.format("ADC%02d : %04d\n", kit.IO.AIN3.adress, kit.IO.AIN3.real))
+	
+	ram = collectgarbage'count'
+	if ram > rammax then
+		print(ram)
+		rammax = ram
+	end
+	
 
 	if not state then break end
 end
