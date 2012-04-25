@@ -7,10 +7,10 @@ local pressed = {}
 BTN_SELECT  = pio.PB_4
 LED_1  = pio.PD_0
 
---local adcsmoothing = 4
---local adctimer = 0 
---local adc_f = 4
---local tsample
+local adc_smoothing = 4
+local adc_timer = 1 
+local adc_f = 4
+local tsample
 
 btn_pressed = function( button )
   return pio.pin.getval( button ) == 0
@@ -36,24 +36,23 @@ IO = {
 		DOUT4 = {adress = pio.PH_4},
 		
 		DIN0 = {adress = pio.PB_4},
---		DIN1 = {adress = pio.PE_7},
+		--DIN1 = {adress = pio.PE_7},   --ADCPort!
 		
 		AIN0 = {adress = 0},
 		AIN1 = {adress = 1},
 		AIN2 = {adress = 2},
-		AIN3 = {adress = 3}
+		AIN3 = {adress = 3},
 		
---		AOUT0 = {adress = pio.PD_0},
---		AOUT1 = {adress = pio.PD_1},
---		AOUT2 = {adress = pio.PD_2},
---		AOUT3 = {adress = pio.PD_3}
+		AOUT0 = {adress = pio.PD_0},
+		AOUT1 = {adress = pio.PD_1},
+		AOUT2 = {adress = pio.PD_2},
+		AOUT3 = {adress = pio.PD_3}
 		}
 
 mt = { __index = {real = 0, custom, merge = 0} }
 
 for i, v in pairs(IO) do
 	setmetatable(IO[i], mt)
-	pio.pin.setdir( pio.OUTPUT, IO[i].adress )
 end
 
 
@@ -64,15 +63,15 @@ for i in pairs(IO) do
 	elseif i:find("DOUT") then
 		pio.pin.setdir( pio.OUTPUT, IO[i].adress )
 	elseif i:find("AIN") then
---		adc.setblocking(IO[i].adress,0) -- no blocking on any channels
---  		adc.setsmoothing(IO[i].adress,adc_smoothing) -- set smoothing from adcsmoothing table
---  		adc.setclock(IO[i].adress, adc_f , adc_timer) -- get 4 samples per second, per channel
-  				
+		adc.setblocking(IO[i].adress,0) -- no blocking on any channels
+ 		adc.setsmoothing(IO[i].adress,adc_smoothing) -- set smoothing from adcsmoothing table
+  		adc.setclock(IO[i].adress, adc_f , adc_timer) -- get 4 samples per second, per channel	
 	else
 	
 	end
 end
 
+adc.sample({0,1,2,3},128)
 
 function update()
 	for i in pairs(IO) do
@@ -83,12 +82,12 @@ function update()
 			pio.pin.setval( IO[i].merge, IO[i].adress )
 			
 		elseif i:find("AIN") then
---			if adc.isdone(IO[i].adress) == 1 then adc.sample(IO[i].adress,128) end --wenn buffer voll, neustart
---			tsample = adc.getsample(IO[i].adress) --nächstes sample vom buffer holen
---			if not (tsample == nil) then 
---    			IO[i].real = tsample
---    		end
-    		
+			if adc.isdone(IO[i].adress) == 1 then adc.sample(IO[i].adress,128) end --wenn buffer voll, neustart
+			
+			tsample = adc.getsample(IO[i].adress) --nächstes sample vom buffer holen
+			if not (tsample == nil) then 
+    			IO[i].real = tsample
+    		end  		
 		else
 		
 		end
