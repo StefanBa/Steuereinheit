@@ -1,5 +1,6 @@
 local kit = require( "kit" )
 local cmd = require("cmd")
+mode = "prog"
 
 module(..., package.seeall)								--koroutinen und loadstring braucht explizit _G
 
@@ -30,9 +31,18 @@ function get.settings(command)
 	end
 end
 
-function set.custom(id, value)
+function set.io(id, value)
+	if value == "real" then
+		kit.IO[id].custom = nil
+		return
+	end
 	value = tonumber(value)
-	kit.d_out[id].custom = value
+	if mode == "prog" then
+		kit.IO[id].custom = value
+	else 
+		kit.IO[id].real = value
+	end
+
 end
 
 function set.mode(mode)
