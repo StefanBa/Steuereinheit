@@ -1,41 +1,37 @@
-
+--require "kit"
 require "control"
 require "com"
-dofile("/rom/prog.lc")
 
-local threads = {}
+threads = {}
 
-threads[1] = coroutine.create(function ()
+table.insert(threads, coroutine.create(function ()
 	while true do
 		control.run()
---		print("thread1")
 		coroutine.yield()
 	end
-end)
+end))
 
-threads[2] = coroutine.create(function ()
+table.insert(threads, coroutine.create(function ()
 	while true do
 		com.run()
---		print("thread2")
 		coroutine.yield()
 	end
-end)
+end))
 
-threads[3] = coroutine.create(function ()
-	while true do
-		prog.run()
---		print("thread3")
-		coroutine.yield()
-	end
-end)
+dofile("/rom/prog.lc")
 
 com.init()
+
+--term.clrscr()
+
+print("init done")
 
 while true do
 	local state, msg
 	
-	for i=1,#threads do
+	for i=1, control.threadend do
 		state, msg = coroutine.resume(threads[i])
+		print("thread", i)
 		if not state then
 			print(msg)
 			break
@@ -44,7 +40,10 @@ while true do
 	
 	kit.merge()
 	kit.update()
-	
+	--term.print(1,2,string.format("ADC%02d : %04d\n", IO.AIN0.adress, IO.AIN0.real))
+	--term.print(1,3,string.format("ADC%02d : %04d\n", IO.AIN1.adress, IO.AIN1.real))
+	--term.print(1,2,string.format("ADC%02d : %04d\n", IO.AIN2.adress, IO.AIN2.real))
+	--term.print(1,5,string.format("ADC%02d : %04d\n", IO.AIN3.adress, IO.AIN3.real))
 	if not state then break end
 end
 

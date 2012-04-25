@@ -1,6 +1,8 @@
 local kit = require( "kit" )
 local cmd = require("cmd")
-mode = "prog"
+local mode = "stop"
+threadend = 2
+
 
 module(..., package.seeall)								--koroutinen und loadstring braucht explizit _G
 
@@ -34,19 +36,27 @@ end
 function set.io(id, value)
 	if value == "real" then
 		kit.IO[id].custom = nil
+		print("real", kit.IO[id].real)
 		return
 	end
 	value = tonumber(value)
-	if mode == "prog" then
+	if mode == "run" then
 		kit.IO[id].custom = value
+		print("custom", kit.IO[id].custom)
 	else 
 		kit.IO[id].real = value
+		print("real", kit.IO[id].real)
 	end
-
 end
 
-function set.mode(mode)
-	if mode == "normal" then
+function set.mode(s)
+	if s == "run" then
+		mode = "run"
+		threadend = #threads
+	elseif s == "stop" then
+		mode = "stop"
+		threadend = 2
+		print("DOUT0 real",kit.IO.DOUT0.real)
 		kit.reset()
 	end
 end
