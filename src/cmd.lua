@@ -5,28 +5,34 @@ local input
 
 local function findText(text, iteration)
 	iteration = iteration or 10
+	--local tstart = tmr.start(2)
+	--while true do
 	for i = 1, iteration do
+		--local tend = tmr.read(2)
+		--local delta = tmr.gettimediff( 2, tend, tstart  ) 
 		input = com.read()
 		if input then
 			if input:find(text) then 
-				print(text .." found")
-				return true
+				print("found:   ", text, delta)
+				return input
 			end
 		end
+		coroutine.yield()
 	end
-	print(text .. " not found")
+	print("not found:", text)
 	com.write("error\n\r")
 end
 
 local function mydelay(time)
-	local tstart = tmr.start( 0 )
+	local tstart = tmr.start( 1 )
 	local delta = 0
 	while delta < (time) do
-		local tend = tmr.read( 0 )
-		delta = tmr.gettimediff( 0, tstart, tend )
+		local tend = tmr.read( 1 )
+		delta = tmr.gettimediff( 1, tend, tstart  )
 		coroutine.yield()
 	end
-	print("delay of "..time.."us done")
+	print( "mydelay: ", time )
+	--print("tstart:"..tstart, "tend:"..tend, "delta break:" .. delta)
 end
 
 function on()
@@ -38,28 +44,27 @@ end
 
 function off()
 	com.write("exit\r")
-	mydelay(100000)
+	mydelay(300000)
 	findText("EXIT")
 end
 
 function setDeviceid(s)
-	on()
 	local deviceid = string.gsub(s, " ", "$")		--Leerschläge mit $ ersetzen
 	com.write("set opt deviceid "..deviceid.."\r")
 	mydelay(100000)
 	findText("AOK")
+	
 	com.write("save\r")
-	mydelay(100000)
+	mydelay(1500000)
 	findText("Storing in config")
-	off()
+
 end
 
 function getSettings(command)
 	local settings = {}
-	on()
 	com.write("get "..command.."\r")
-	mydelay(100000)
-	if not findText("=") then print("errör") return end
+	mydelay(150000)
+	input = findText("=")
 	while input:find("=") do						--options abfüllen
 		local index, value
 		index, value = input:match("(.+)=(.*)")
@@ -67,7 +72,5 @@ function getSettings(command)
 		input = com.read()
 		if not input then break end					-- wenn input nil ist, schleife verlassen		
 	end
-	mydelay(10000)
-	off()
 	return settings
 end

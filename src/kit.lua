@@ -4,8 +4,17 @@ local pio = pio
 module(..., package.seeall)	
 
 local pressed = {}
-BTN_SELECT  = pio.PB_4
-LED_1  = pio.PD_0
+BTN_SELECT  = pio.PB_7
+BTN_WPS 	= pio.PE_3
+LED_GRUN  	= pio.PB_6
+LED_ORANGE 	= pio.PB_5
+CMD 		= pio.PA_7
+RstWLAN 	= pio.PA_6
+
+pio.pin.setdir( pio.INPUT, BTN_SELECT, BTN_WPS )
+pio.pin.setpull( pio.PULLUP, BTN_SELECT, BTN_WPS )
+pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD, RstWLAN )
+
 
 local adc_smoothing = 4
 local adc_timer = 1 
@@ -31,24 +40,30 @@ button_clicked = function( button )
 end
 
 IO = {
-		DOUT0 = {adress = pio.PD_0},
-		DOUT1 = {adress = pio.PH_1},
-		DOUT2 = {adress = pio.PH_2},
-		DOUT3 = {adress = pio.PH_3},
-		DOUT4 = {adress = pio.PH_4},
+		DOUT0 = {adress = pio.PB_6},
+		DOUT1 = {adress = pio.PB_5},
+		DOUT2 = {adress = pio.PH_6},
+		DOUT3 = {adress = pio.PH_7},
+		DOUT4 = {adress = pio.PI_0},
+		DOUT5 = {adress = pio.PI_1},
+		DOUT6 = {adress = pio.PI_2},
+		DOUT7 = {adress = pio.PI_3},
+		DOUT8 = {adress = pio.PI_4},
+		DOUT9 = {adress = pio.PI_5},
+
 		
-		DIN0 = {adress = pio.PB_4},
-		DIN1 = {adress = pio.PB_7},
+		DIN0 = {adress = pio.PB_7},
+		DIN1 = {adress = pio.PE_3},
 		
 		AIN0 = {adress = 0},
 		AIN1 = {adress = 1},
 		AIN2 = {adress = 2},
 		AIN3 = {adress = 3},
 		
-		AOUT0 = {adress = 0, real = 50},
-		AOUT1 = {adress = 1, real = 50},
-		AOUT2 = {adress = 2, real = 50},
-		AOUT3 = {adress = 3, real = 50}
+		AOUT0 = {adress = 0},
+		AOUT1 = {adress = 1},
+		AOUT2 = {adress = 2},
+		AOUT3 = {adress = 3}
 		}
 
 mt = { __index = {real = 0, custom, merge = 0} }
@@ -75,14 +90,15 @@ for i in pairs(IO) do
 	else
 		pwm.setup( IO[i].adress, pwm_f, IO[i].real )
 		pwm.start( IO[i].adress )
-		print( "pwm_init", IO[i].adress,pwm_f )
 	end
+	
 end
 
 adc.sample({0,1,2,3},128)
 
 function update()
 	for i in pairs(IO) do
+	
 		if i:find("DIN") then
 			IO[i].real = pio.pin.getval( IO[i].adress )
 			
@@ -91,14 +107,15 @@ function update()
 			
 		elseif i:find("AIN") then
 			if adc.isdone(IO[i].adress) == 1 then adc.sample(IO[i].adress,128) end --wenn buffer voll, neustart
-			
 			tsample = adc.getsample(IO[i].adress) --nächstes sample vom buffer holen
 			if not (tsample == nil) then 
     			IO[i].real = tsample
-    		end  		
+    		end
+    				
 		else
 			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )		
 		end
+		
 	end
 end
 

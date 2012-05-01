@@ -12,22 +12,28 @@ set = {}												--müssen global sein, wegen loadstring
 get = {}
 
 function set.devName(deviceid)
+	cmd.on()
 	cmd.setDeviceid(deviceid)
-	local option = cmd.getSettings("option")			--der Name zurückschreiben, der wirklich im Speicher steht (2x im CMD-Mode :/)
-	if not option then return end						--debug..entfernen!!
-	com.write("ack.devName."..option.DeviceId.."\r\n")	 
-	--com.write("ack.devName."..deviceid.."\r\n")
+	local option = cmd.getSettings("option")			--der Name zurückschreiben, der wirklich im Speicher steht
+	cmd.off()
+	if option then
+		com.write("ack.devName."..option.DeviceId.."\r\n")
+	end
 end
 
 function get.devName()
-	print("hello from getdevName")
+	cmd.on()
 	local option = cmd.getSettings("option")
-	if not option then return end						--debug..entfernen!!
-	com.write("ret.devName."..option.DeviceId.."\r\n")	
+	cmd.off()
+	if option then
+		com.write("ret.devName."..option.DeviceId.."\r\n")
+	end
 end
 
 function get.settings(command)
+	cmd.on()
 	local settings = cmd.getSettings(command)
+	cmd.off()
 	for k,v in pairs(settings) do
 		com.write(k .. " = " .. v .. "\n\r")
 	end
@@ -47,13 +53,15 @@ function set.io(id, value)
 		kit.IO[id].real = value
 		print("real", kit.IO[id].real)
 	end
+	coroutine.yield()
+	get.io(id)
 end
 
 function get.io(id)
-	com.write("ret.io" .. kit.IO[id].merge)
+	com.write("ret.io.".. id .. "." .. kit.IO[id].merge .. "\n\r")
 end
 
-function set.mode(s)
+function set.program(s)
 	if s == "run" then
 		mode = "run"
 		threadend = #threads
@@ -63,6 +71,19 @@ function set.mode(s)
 		print("DOUT0 real",kit.IO.DOUT0.real)
 		kit.reset()
 	end
+	com.write("ack.program." .. mode .. "\n\r")
+end
+
+function get.program(s)
+	com.write("ret.program." .. mode .. "\n\r")
+end
+
+function get.ack(s)
+	com.write("ret.ack\n\r")
+end
+
+function set.talk(s)
+	com.write(s)
 end
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!

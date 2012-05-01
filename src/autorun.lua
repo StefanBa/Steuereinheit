@@ -2,6 +2,11 @@ require "kit"
 require "control"
 require "com"
 
+term.clrscr()
+print("\n\r Android-basiertes Home Automation System \n\r")
+
+pio.pin.sethigh( kit.RstWLAN )
+
 threads = {}
 
 table.insert(threads, coroutine.create(function ()
@@ -20,7 +25,6 @@ end))
 
 dofile("/rom/prog.lc")
 
-com.init()
 
 --term.clrscr()
 local ram, rammax = 0, 0
@@ -43,15 +47,18 @@ while true do
 	--term.print(1,3,string.format("ADC%02d : %04d\n", kit.IO.AIN1.adress, kit.IO.AIN1.real))
 	--term.print(1,4,string.format("ADC%02d : %04d\n", kit.IO.AIN2.adress, kit.IO.AIN2.real))
 	--term.print(1,5,string.format("ADC%02d : %04d\n", kit.IO.AIN3.adress, kit.IO.AIN3.real))
-	
+--[[	
 	ram = collectgarbage'count'
 	if ram > rammax then
 		print(ram)
 		rammax = ram
 	end
-	
+--]]
 
 	if not state then break end
+	
+	key = term.getchar( term.NOWAIT )
+  	if key == term.KC_ESC then break end -- exit if user hits Escape
 end
 
 
