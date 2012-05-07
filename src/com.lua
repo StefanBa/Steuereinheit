@@ -1,18 +1,13 @@
 local kit = require( "kit" )
 local list = require("list")
-local uart = uart
-local print = print
-local tmr = tmr
-local coroutine = coroutine
-local io = io
 
-module(...)
+module(..., package.seeall)
 
 local id = 0
 local sendList = list.List:new()
 local recvList = list.List:new()
-local connected = false
---local connected = true
+--local connected = false
+local connected = true
 local END = "\r"
 
 
@@ -59,6 +54,7 @@ function recv()
 		checkconnect(input)
 		
 		local tend = tmr.read( 0 )
+		--local delta = tmr.gettimediff( 0, tstart, tend )
 		local delta = tmr.gettimediff( 0, tend, tstart )
 		if delta > (200000) then
 			print("timeout: " , input)

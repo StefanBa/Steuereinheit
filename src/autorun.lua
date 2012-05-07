@@ -1,15 +1,24 @@
+local showio = false
+printold = print
+function printnew(...)
+	if not showio then
+		printold(...)
+	end
+end
+print = printnew
+
 require "kit"
 require "control"
 require "com"
+require "cmd"
 
 term.clrscr()
 print("\n\r Android-basiertes Home Automation System \n\r")
 
-pio.pin.sethigh( kit.RstWLAN )
-
 threads = {}
 
 table.insert(threads, coroutine.create(function ()
+	control.init()
 	while true do
 		control.run()
 		coroutine.yield()
@@ -23,7 +32,12 @@ table.insert(threads, coroutine.create(function ()
 	end
 end))
 
+
+
+
+
 dofile("/rom/prog.lc")
+
 
 
 --term.clrscr()
@@ -43,10 +57,29 @@ while true do
 	kit.merge()
 	kit.update()
 	
-	--term.print(1,2,string.format("ADC%02d : %04d\n", kit.IO.AIN0.adress, kit.IO.AIN0.real))
-	--term.print(1,3,string.format("ADC%02d : %04d\n", kit.IO.AIN1.adress, kit.IO.AIN1.real))
-	--term.print(1,4,string.format("ADC%02d : %04d\n", kit.IO.AIN2.adress, kit.IO.AIN2.real))
-	--term.print(1,5,string.format("ADC%02d : %04d\n", kit.IO.AIN3.adress, kit.IO.AIN3.real))
+	if kit.button_clicked(kit.BTN_WPS) then
+		if showio then
+			showio = false
+			term.clrscr()
+			term.moveto(1,1)
+		else
+			showio = true
+			term.clrscr()
+		end			
+	end
+	
+	if showio then
+		local line = 1
+		term.print( 1, line, "ID real custom merge adress\n")
+		for _,i in pairs(kit.SORT) do
+			line = line + 1
+			local merge = kit.IO[i].merge
+			local custom = kit.IO[i].custom
+			if (kit.IO[i].custom == nil) then custom = 9999 end
+			if (kit.IO[i].merge == nil) then merge = 9999 end
+			term.print( 1, line, i, string.format(" %4d %4d %4d %4d\n", kit.IO[i].real, custom, merge, kit.IO[i].adress ) )
+		end
+	end
 --[[	
 	ram = collectgarbage'count'
 	if ram > rammax then
@@ -60,6 +93,7 @@ while true do
 	key = term.getchar( term.NOWAIT )
   	if key == term.KC_ESC then break end -- exit if user hits Escape
 end
+
 
 
 

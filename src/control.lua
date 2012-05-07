@@ -1,6 +1,7 @@
 local kit = require( "kit" )
 local cmd = require("cmd")
 local mode = "stop"
+--local file = require("file")
 threadend = 2
 
 
@@ -8,16 +9,31 @@ module(..., package.seeall)								--koroutinen und loadstring braucht explizit 
 
 local count = 0
 local input = nil
+local BOARD_ID
 set = {}												--müssen global sein, wegen loadstring
 get = {}
 
+function init()
+	--pio.pin.sethigh( kit.RstWLAN )
+	cmd.on()
+	local mac = cmd.getSettings("mac")
+	cmd.off()
+	local mac2, mac1, mac0 = string.match(mac["Mac Addr"], "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
+	BOARD_ID = mac2 .. mac1 .. mac0
+	mac, mac2, mac1, mac0 = nil, nil, nil, nil
+	print("BOARD_ID = ".. BOARD_ID)
+end
+
+
 function set.devName(deviceid)
+	local s = " "
+	deviceid = deviceid.. s:rep( 26 - deviceid:len() ) .. BOARD_ID
 	cmd.on()
 	cmd.setDeviceid(deviceid)
 	local option = cmd.getSettings("option")			--der Name zurückschreiben, der wirklich im Speicher steht
 	cmd.off()
 	if option then
-		com.write("ack.devName."..option.DeviceId.."\r\n")
+		com.write("ack\r\n")
 	end
 end
 
@@ -26,7 +42,7 @@ function get.devName()
 	local option = cmd.getSettings("option")
 	cmd.off()
 	if option then
-		com.write("ret.devName."..option.DeviceId.."\r\n")
+		com.write("ret;"..option.DeviceId.."\r\n")
 	end
 end
 
@@ -35,7 +51,7 @@ function get.settings(command)
 	local settings = cmd.getSettings(command)
 	cmd.off()
 	for k,v in pairs(settings) do
-		com.write(k .. " = " .. v .. "\n\r")
+		com.write(k .. " = " .. v .. "\r\n")
 	end
 end
 
@@ -54,11 +70,11 @@ function set.io(id, value)
 		print("real", kit.IO[id].real)
 	end
 	coroutine.yield()
-	get.io(id)
+	com.write("ack\r\n")
 end
 
 function get.io(id)
-	com.write("ret.io.".. id .. "." .. kit.IO[id].merge .. "\n\r")
+	com.write("ret;" .. kit.IO[id].merge .. "\r\n")
 end
 
 function set.program(s)
@@ -68,18 +84,29 @@ function set.program(s)
 	elseif s == "stop" then
 		mode = "stop"
 		threadend = 2
-		print("DOUT0 real",kit.IO.DOUT0.real)
 		kit.reset()
 	end
-	com.write("ack.program." .. mode .. "\n\r")
+	com.write("ack\r\n")
 end
 
 function get.program(s)
-	com.write("ret.program." .. mode .. "\n\r")
+	com.write("ret;" .. mode .. "\r\n")
 end
 
-function get.ack(s)
-	com.write("ret.ack\n\r")
+function set.file(filename, filesize)
+	print("recv in")
+	--file.recv(filename, filesize)
+	print("recv out")
+end
+
+function get.file(filename)
+	print("send in")
+	--file.send(filename)
+	print("send out")
+end
+
+function get.ack()
+	com.write("ret;ack\r\n")
 end
 
 function set.talk(s)
@@ -112,7 +139,7 @@ end
 
 function achieve(s)
 	local splitter = {}
-	for k in s:gmatch("[^%.]+") do
+	for k in s:gmatch("[^%;]+") do
 		splitter[#splitter + 1] = k
 	end
 	if #splitter > 1 then

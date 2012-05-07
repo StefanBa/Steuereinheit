@@ -28,6 +28,7 @@ local function mydelay(time)
 	local delta = 0
 	while delta < (time) do
 		local tend = tmr.read( 1 )
+		--delta = tmr.gettimediff( 1, tstart, tend  )
 		delta = tmr.gettimediff( 1, tend, tstart  )
 		coroutine.yield()
 	end
