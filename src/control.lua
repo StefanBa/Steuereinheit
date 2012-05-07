@@ -1,7 +1,7 @@
 local kit = require( "kit" )
 local cmd = require("cmd")
 local mode = "stop"
---local file = require("file")
+local file = require("file")
 threadend = 2
 
 
@@ -95,13 +95,13 @@ end
 
 function set.file(filename, filesize)
 	print("recv in")
-	--file.recv(filename, filesize)
+	file.recv(filename, filesize)
 	print("recv out")
 end
 
-function get.file(filename)
+function get.file(filename, filesize)
 	print("send in")
-	--file.send(filename)
+	file.send(filename, filesize)
 	print("send out")
 end
 

@@ -97,11 +97,9 @@ for i in pairs(IO) do
 		adc.setblocking( IO[i].adress,0) -- no blocking on any channels
  		adc.setsmoothing( IO[i].adress, adc_smoothing ) -- set smoothing from adcsmoothing table
   		adc.setclock( IO[i].adress, adc_f, adc_timer ) -- get 4 samples per second, per channel	
-		print(i .. " initialisiert")
 	else
 		pwm.setup( IO[i].adress, pwm_f, IO[i].real )
 		pwm.start( IO[i].adress )
-		print(i .. " initialisiert")
 	end
 	
 end
