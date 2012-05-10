@@ -6,8 +6,7 @@ local function mydelay(t)
 	
 	while delta < t do
 		coroutine.yield()
-		local tend = tmr.read( 3 )
-		delta = tmr.gettimediff( 3, tend, tstart )
+		delta = tmr.getdiffnow( 3, tstart )
 	end
 end
 
@@ -18,9 +17,9 @@ table.insert(threads, coroutine.create(function ()
 	local time = 400000	
 
 	while true do
-		local tend = tmr.read( 3 )
+		--local tend = tmr.read( 3 )
 		--local delta = tmr.gettimediff( 3, tstart, tend )
-		local delta = tmr.gettimediff( 3, tend, tstart )
+		delta = tmr.getdiffnow( 3, tstart )
 	    --print("start: "..tstart ,"end: "..tend ,"delta: "..delta)
 		if delta < (85899345-time) then
 			if state and kit.IO.DIN1.merge == 1 then
@@ -54,7 +53,7 @@ table.insert(threads, coroutine.create(function ()
 				kit.IO[i].real = kit.IO[IN].merge
 			elseif i:find("AO") then
 				local IN = i:gsub("O","I")
-				kit.IO[i].real = math.ceil(99/1023 * kit.IO[IN].merge)
+				kit.IO[i].real = math.ceil(99/4095 * kit.IO[IN].merge)
 			end
 		end
 		coroutine.yield()

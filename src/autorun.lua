@@ -32,15 +32,8 @@ table.insert(threads, coroutine.create(function ()
 	end
 end))
 
-
-
-
-
 dofile("/rom/prog.lc")
 
-
-
---term.clrscr()
 local ram, rammax = 0, 0
 
 while true do

@@ -99,8 +99,9 @@ function set.file(filename, filesize)
 	print("recv out")
 end
 
-function get.file(filename, filesize)
+function get.file(filename)
 	print("send in")
+	filesize = mymod.getsize(filename)
 	file.send(filename, filesize)
 	print("send out")
 end

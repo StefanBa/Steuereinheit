@@ -53,9 +53,7 @@ function recv()
 		
 		checkconnect(input)
 		
-		local tend = tmr.read( 0 )
-		--local delta = tmr.gettimediff( 0, tstart, tend )
-		local delta = tmr.gettimediff( 0, tend, tstart )
+		local delta = tmr.getdiffnow( 0, tstart )
 		if delta > (200000) then
 			print("timeout: " , input)
 			input = ""
@@ -77,11 +75,9 @@ end
 function run()
 	recv()
 	send()
---	test()
+	test()
 end
 
-
---[[
 function test()
 	local prot
 	if kit.button_clicked( kit.BTN_SELECT ) then
@@ -92,7 +88,7 @@ function test()
 --	elseif kit.button_clicked( kit.BTN_DOWN ) then
 --		print("sendlist lenght: "..#recvList)
 --	end
-end --]]
+end
 
 
 

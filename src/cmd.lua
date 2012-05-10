@@ -8,8 +8,8 @@ local function findText(text, iteration)
 	--local tstart = tmr.start(2)
 	--while true do
 	for i = 1, iteration do
-		--local tend = tmr.read(2)
-		--local delta = tmr.gettimediff( 2, tend, tstart  ) 
+		
+		--local delta = tmr.getdiffnow( 2, tstart )
 		input = com.read()
 		if input then
 			if input:find(text) then 
@@ -27,9 +27,7 @@ local function mydelay(time)
 	local tstart = tmr.start( 1 )
 	local delta = 0
 	while delta < (time) do
-		local tend = tmr.read( 1 )
-		--delta = tmr.gettimediff( 1, tstart, tend  )
-		delta = tmr.gettimediff( 1, tend, tstart  )
+		delta = tmr.getdiffnow( 1, tstart )
 		coroutine.yield()
 	end
 	print( "mydelay: ", time )
