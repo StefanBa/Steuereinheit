@@ -1,6 +1,5 @@
-local setmetatable = _G.setmetatable
 
-module(...)
+module(..., package.seeall)	
 
 List = {first = 0, last = -1}
 

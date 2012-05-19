@@ -1,17 +1,25 @@
-local kit = require( "kit" )
-local cmd = require("cmd")
-local mode = "stop"
-local file = require("file")
-threadend = 2
 
+module(..., package.seeall)
 
-module(..., package.seeall)								--koroutinen und loadstring braucht explizit _G
+require "kit"
+require "cmd"
+require "file"
+require "conf"
 
-local count = 0
-local input = nil
-local BOARD_ID
 set = {}												--müssen global sein, wegen loadstring
 get = {}
+
+threadstart = 1
+threadend = 2
+boardID = ""
+
+local mode = "stop"					--kann stop, run (oder debug??) sein
+local ack = "ack"
+local ret = "ret"
+
+local function tmr_handler()
+  get.store("update")
+end
 
 function init()
 	--pio.pin.sethigh( kit.RstWLAN )
@@ -19,21 +27,25 @@ function init()
 	local mac = cmd.getSettings("mac")
 	cmd.off()
 	local mac2, mac1, mac0 = string.match(mac["Mac Addr"], "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
-	BOARD_ID = mac2 .. mac1 .. mac0
+	boardID =  mac2 .. mac1 .. mac0
 	mac, mac2, mac1, mac0 = nil, nil, nil, nil
-	print("BOARD_ID = ".. BOARD_ID)
+	print("boardID = ".. boardID )
+	cpu.set_int_handler( cpu.INT_TMR_MATCH, tmr_handler )
 end
 
+function get.ack()
+	com.write(ret, ack)
+end
 
 function set.devName(deviceid)
 	local s = " "
-	deviceid = deviceid.. s:rep( 26 - deviceid:len() ) .. BOARD_ID
+	deviceid = deviceid.. s:rep( 26 - deviceid:len() ) .. boardID
 	cmd.on()
 	cmd.setDeviceid(deviceid)
 	local option = cmd.getSettings("option")			--der Name zurückschreiben, der wirklich im Speicher steht
 	cmd.off()
-	if option then
-		com.write("ack\r\n")
+	if option.DeviceId == deviceid then
+		com.write(ack)
 	end
 end
 
@@ -42,16 +54,7 @@ function get.devName()
 	local option = cmd.getSettings("option")
 	cmd.off()
 	if option then
-		com.write("ret;"..option.DeviceId.."\r\n")
-	end
-end
-
-function get.settings(command)
-	cmd.on()
-	local settings = cmd.getSettings(command)
-	cmd.off()
-	for k,v in pairs(settings) do
-		com.write(k .. " = " .. v .. "\r\n")
+		com.write(ret, option.DeviceId)
 	end
 end
 
@@ -70,11 +73,11 @@ function set.io(id, value)
 		print("real", kit.IO[id].real)
 	end
 	coroutine.yield()
-	com.write("ack\r\n")
+	com.write(ack)
 end
 
 function get.io(id)
-	com.write("ret;" .. kit.IO[id].merge .. "\r\n")
+	com.write(ret, kit.IO[id].merge)
 end
 
 function set.program(s)
@@ -83,14 +86,15 @@ function set.program(s)
 		threadend = #threads
 	elseif s == "stop" then
 		mode = "stop"
-		threadend = 2
-		kit.reset()
+		threadend = 4
+		kit.reset("merge")
+		kit.reset("custom")
 	end
-	com.write("ack\r\n")
+	com.write(ack)
 end
 
-function get.program(s)
-	com.write("ret;" .. mode .. "\r\n")
+function get.program()
+	com.write(ret, mode)
 end
 
 function set.file(filename, filesize)
@@ -106,12 +110,54 @@ function get.file(filename)
 	print("send out")
 end
 
-function get.ack()
-	com.write("ret;ack\r\n")
+function set.store(key, ...)
+	if key == "update" then
+		kit.reset("real")
+		kit.reset("custom")
+		kit.reset("merge")
+		kit.update()
+		local a = ...
+		if a == "all" then
+			conf.set(key, kit.SORT)
+			com.write(ack)
+			return
+		end
+	end
+	conf.set(key, {...})
+	com.write(ack)
 end
 
-function set.talk(s)
-	com.write(s)
+function get.store(key)
+	com.write(ret, key, unpack( conf.get(key) ) )
+end
+
+function set.remote(s , time)
+	local id = tmr.VIRT0
+	local time = time or 1000000	--min für VIRT-TMR: 250000
+	if s == "on" then
+		tmr.set_match_int( id, time, tmr.INT_CYCLIC );
+		cpu.sei( cpu.INT_TMR_MATCH, id )
+	elseif s == "off" then
+		tmr.set_match_int( id, 0, tmr.INT_CYCLIC );
+		cpu.cli( cpu.INT_TMR_MATCH, id )
+	end
+end
+
+function set.cleanfile()
+	file = io.open("/mmc/boardconf.lua", "w")
+	file:write("")
+	file:flush()
+	file:close()
+	print("boardconf.lua cleaned")
+end
+
+function get.settings(command)
+	cmd.on()
+	local settings = cmd.getSettings(command)
+	cmd.off()
+	for k,v in pairs(settings) do
+		print(k .. " = " .. v .. "\r\n")
+	end
 end
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!
@@ -138,20 +184,18 @@ local function checkName(name)
 	return false
 end
 
-function achieve(s)
-	local splitter = {}
-	for k in s:gmatch("[^%;]+") do
-		splitter[#splitter + 1] = k
-	end
-	if #splitter > 1 then
-		if not checkName(splitter[2]) then return end						--feher abfangen
-		fcall = createfcall(splitter)
+function achieve(input)
+	if #input > 1 then
+		if not checkName(input[2]) then return end						--feher abfangen
+		fcall = createfcall(input)
 		fcall()
 	end
 end
 
 function run()
-	input = com.read()
-	if input then achieve(input) end
+	local input = com.read()
+	if input then
+		achieve(input)
+	end
 end
 	

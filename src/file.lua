@@ -1,12 +1,14 @@
 
-module(..., package.seeall)	
+module(..., package.seeall)
 
-local UARTID = 0
+require "com"
+
 local BLOCKSIZE = 64		--ohne checksumme
 local TIMEOUT = 2000000
 local TIMERID = nil			--Systemtimer
 local ack = "ack\r\n"
 local nak = "nak\r\n"
+local TRIES = 2
 
 local function checksum(s)
 	local sum = 0
@@ -18,35 +20,38 @@ local function checksum(s)
 	return bit.band( sum,255 )
 end
 
-local function writeToFile(file)
-	local input = uart.read( UARTID, BLOCKSIZE + 1, TIMEOUT, TIMERID )
-	print("input:",input)
+local function writeToFile(file)	
 	local count = 0
 	
-	local dataBytes = input:sub(1,-2)
-	local lastByte = string.byte( input:sub(-1) )
-
-	local checksum = checksum( dataBytes )
-	print("Checksum:" , checksum, "last byte:", lastByte )
+	while count ~= TRIES do
+		count = count + 1
+		local input = uart.read( com.uart_id, BLOCKSIZE + 1, TIMEOUT, TIMERID )
+		print("input:",input)
 	
-	if checksum == lastByte then
-		print("checksum", "ok")
-		file:write( dataBytes )
-		print("write:   ".. dataBytes)
-		uart.write(UARTID, ack)
-		return true
-	else
-		print("checksum", "not ok")
-		uart.write(UARTID, nak)
-		return false
+		local dataBytes = input:sub(1,-2)
+		local lastByte = string.byte( input:sub(-1) )
+		local checksum = checksum( dataBytes )
+		print("Checksum:" , checksum, "last byte:", lastByte )
+		
+		if checksum == lastByte then
+			print("checksum", "ok")
+			file:write( dataBytes )
+			print("write:   ".. dataBytes)
+			uart.write(com.uart_id, ack)
+			return true
+		else
+			print("checksum", "not ok")
+			uart.write(com.uart_id, nak)
+		end
 	end
+	return false
 end
 
 local function readFromFile(file)
+	local count = 0
 	local output = file:read(BLOCKSIZE)
 	local checksum = checksum(output)
 	print("letztes byte von checksum:" .. checksum)
-	local count = 0
 	
 	local difflen = BLOCKSIZE - output:len()
 	if difflen ~= 0 then
@@ -56,12 +61,12 @@ local function readFromFile(file)
 		print( "output new:", output)
 	end
 	
-	while count ~= 1  do
+	while count ~= TRIES  do
 		count = count + 1
 		print("count:  ", count)
-		uart.write(UARTID, output .. string.char( checksum ) )
+		uart.write(com.uart_id, output .. string.char( checksum ) )
 		print("data:   " , output .. string.char( checksum ) )					
-		local input = uart.read( UARTID, ack:len(), TIMEOUT, TIMERID )
+		local input = uart.read( com.uart_id, ack:len(), TIMEOUT, TIMERID )
 		if input == ack then return true end
 	end
 	
@@ -69,67 +74,55 @@ local function readFromFile(file)
 end
 
 function recv(filename, filesize)
-
 	local file = io.open( "/mmc/"..filename, "w" )
 	if file then
-		uart.write(UARTID, ack)
+		uart.write(com.uart_id, ack)
 		print( "Open File:", filename )
 	else
-		uart.write(UARTID, nack)
+		uart.write(com.uart_id, nack)
 		return
 	end
 	
+	local nReceived = 0
 	local nPakets = math.floor( filesize / BLOCKSIZE )		--Anzahl volle Pakete (Rest wird mit 0 aufgefüllt)
 	local nRest = filesize % BLOCKSIZE
 	if nRest ~= 0 then
 		nPakets = nPakets + 1
 	end	
-
-
-	local nReceived = 0
 	print( "Pakete:  ", nPakets)
-	print( "Rest:    ", nRest )
-	
-	
+
 	while nReceived ~= nPakets do
 		if writeToFile( file, BLOCKSIZE ) then
 			nReceived = nReceived + 1
 			print( "PaketNR ok:", nReceived )
 		end
 	end
-	
+	print( "Übertragung erfolgreich" )
 	file:flush()
 	file:close()
-
 end
 
-function send(filename, filesize)
-	
+function send(filename, filesize)	
 	if filesize then
 		local file = io.open( "/mmc/"..filename, "r" )
-		uart.write(UARTID, "ret;" .. filesize .. "\r\n")
+		uart.write(com.uart_id, "ret;" .. filesize .. "\r\n")
 	else
-		uart.write(UARTID, nak)
+		uart.write(com.uart_id, nak)
 		return
 	end
 	
-	local input =  uart.read( UARTID, 5, TIMEOUT, TIMERID )
-	
-	if input == ack then
-		print("ack received! :D")
-	else
-		print("ack not received! =(", input)
-		uart.write(UARTID, nak)
+	local input =  uart.read( com.uart_id, 5, TIMEOUT, TIMERID )
+	if not ( input == ack ) then
+		uart.write(com.uart_id, nak)
 		return
 	end
 	
+	local nSent = 0
 	local nPakets = math.floor( filesize / BLOCKSIZE )			--Anzahl volle Pakete ohne Rest
 	local nRest = filesize % BLOCKSIZE
 	if nRest ~= 0 then
 		nPakets = nPakets + 1
 	end
-	
-	local nSent = 0
 	print( "Pakete:  ", nPakets)
 
 	local file = io.open( "/mmc/"..filename, "r" )
@@ -144,7 +137,7 @@ function send(filename, filesize)
 			break
 		end
 	end
-	print("file close")
+	print("Übertragung erfolgreich")
 	file:close()
 end
 

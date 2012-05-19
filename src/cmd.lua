@@ -1,5 +1,7 @@
 
-module(..., package.seeall)	
+module(..., package.seeall)
+
+require "com"	
 
 local input
 
@@ -20,7 +22,6 @@ local function findText(text, iteration)
 		coroutine.yield()
 	end
 	print("not found:", text)
-	com.write("error\n\r")
 end
 
 local function mydelay(time)
@@ -35,25 +36,27 @@ local function mydelay(time)
 end
 
 function on()
+	com.cmd_on = true
 	mydelay(300000)
-	com.write("$$$")
+	uart.write(com.uart_id, "$$$")			-- kein Endzeichen senden
 	mydelay(300000)
 	findText("CMD")
 end
 
 function off()
-	com.write("exit\r")
+	com.write("exit")
 	mydelay(300000)
 	findText("EXIT")
+	com.cmd_on = false
 end
 
 function setDeviceid(s)
 	local deviceid = string.gsub(s, " ", "$")		--Leerschläge mit $ ersetzen
-	com.write("set opt deviceid "..deviceid.."\r")
+	com.write("set opt deviceid "..deviceid)
 	mydelay(100000)
 	findText("AOK")
 	
-	com.write("save\r")
+	com.write("save")
 	mydelay(1500000)
 	findText("Storing in config")
 
@@ -61,7 +64,7 @@ end
 
 function getSettings(command)
 	local settings = {}
-	com.write("get "..command.."\r")
+	com.write("get "..command )
 	mydelay(150000)
 	input = findText("=")
 	while input:find("=") do						--options abfüllen

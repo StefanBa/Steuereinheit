@@ -1,9 +1,10 @@
 
-local pio = pio
+module(..., package.seeall)
 
-module(..., package.seeall)	
+require "conf"
 
 local pressed = {}
+local t_update = {}
 BTN_SELECT  = pio.PB_7
 BTN_WPS 	= pio.PE_3
 LED_GRUN  	= pio.PB_6
@@ -83,9 +84,7 @@ for i, v in pairs(IO) do
 	setmetatable(IO[i], mt)
 end
 
-
 for i in pairs(IO) do
-
 	if i:find("DI") then
 		pio.pin.setdir( pio.INPUT, IO[i].adress )
 		pio.pin.setpull( pio.PULLUP, IO[i].adress )
@@ -107,8 +106,7 @@ end
 adc.sample({0,1,2,3},128)
 
 function update()
-	for i in pairs(IO) do
-	
+	for _,i in pairs(conf.get("update")) do
 		if i:find("DI") then
 			IO[i].real = pio.pin.getval( IO[i].adress )
 			
@@ -121,16 +119,16 @@ function update()
 			if not (tsample == nil) then 
     			IO[i].real = tsample
     		end
-    		--print(i .. " update")		
+    			
 		else
-			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )		
-		end
-		
+			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )
+				
+		end	
 	end
 end
 
-function merge()
-	for i in pairs(IO) do
+local function merge()
+	for _,i in pairs(conf.get("update")) do
 		if IO[i].custom then
 			IO[i].merge = IO[i].custom
 		else
@@ -139,10 +137,17 @@ function merge()
 	end
 end
 
-function reset()
+function reset(key)			--beim Program aus / ändern von _G.const.update
+	local value = 0
+	if key == "custom" then value = nil end
 	for i in pairs(IO) do
-		IO[i].custom = nil
+		IO[i][key] = value
 	end
+end
+
+function run()
+	merge()
+	update()
 end
 
 

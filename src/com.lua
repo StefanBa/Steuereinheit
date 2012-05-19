@@ -1,18 +1,23 @@
-local kit = require( "kit" )
-local list = require("list")
 
 module(..., package.seeall)
 
-local id = 0
+require "kit"
+require "list"
+
+uart_id = 0
+cmd_on = false
+
 local sendList = list.List:new()
 local recvList = list.List:new()
---local connected = false
 local connected = true
-local END = "\r"
+local END1 = "\r"
+local END2 = "\n"
+local SEP = ";"
 
-
-local baudhw = uart.setup(id, 9600, 8, uart.PAR_NONE, uart.STOP_1 )
-uart.set_buffer( id, 256 )
+function init()
+	local baudhw = uart.setup(uart_id, 9600, 8, uart.PAR_NONE, uart.STOP_1 )
+	uart.set_buffer( uart_id, 256 )
+end
 
 local function checkconnect(input)
 	if input:find("*OPEN*") then
@@ -24,47 +29,57 @@ local function checkconnect(input)
 	end
 end
 
-
-function write(s)
-	sendList:pushfirst(s)
+function write(s,...)
+	local arg = {...}
+	for _, i in pairs(arg) do
+		s = s .. SEP .. i
+	end
+	if cmd_on then
+		sendList:pushfirst(s .. END1)
+		return
+	end
+	sendList:pushfirst(s .. END1 .. END2)
 end
 
 function read()
-	return recvList:poplast()
+	local recv = recvList:poplast()
+	if cmd_on or recv == nil then
+		return recv
+	end
+	local splitter = {}
+	for k in recv:gmatch("[^%"..SEP.."]+") do
+		splitter[#splitter + 1] = k
+	end
+	return splitter
 end
 
 function send()
 	local output = sendList:poplast()
 	if output == nil then return end
-	uart.write( id, output)
+	uart.write( uart_id, output)
 	print( "sent:    " , output )
 end
 
 function recv()
 	local input, data
-	
-	input = uart.read( id, '*l', uart.NO_TIMEOUT)
+	input = uart.read( uart_id, '*l', uart.NO_TIMEOUT)
 	if input == "" then return end
 	local tstart = tmr.start( 0 )
 	
-	while input:sub(-1,-1) ~= END do
-		data = uart.read( id, '*l', uart.NO_TIMEOUT)
+	while input:sub(-1,-1) ~= END1 do
+		data = uart.read( uart_id, '*l', uart.NO_TIMEOUT)
 		input = input .. data
-		
 		checkconnect(input)
-		
 		local delta = tmr.getdiffnow( 0, tstart )
 		if delta > (200000) then
 			print("timeout: " , input)
 			input = ""
 			break
 		end
-		
 		coroutine.yield()					  	
 	end
 	
 	checkconnect(input)
-	
 	input = input:sub(1,-2)                     --\r abschneiden
 	if connected then
 		print( "received:" , input )

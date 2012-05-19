@@ -1,5 +1,4 @@
-local kit = require( "kit" )
-
+--[[
 local function mydelay(t)
 	local tstart = tmr.start( 3 )
 	local delta = 0
@@ -10,7 +9,7 @@ local function mydelay(t)
 	end
 end
 
---[[
+
 table.insert(threads, coroutine.create(function ()
 	local state = false
 	local tstart = tmr.start( 3 )
@@ -59,8 +58,6 @@ table.insert(threads, coroutine.create(function ()
 		coroutine.yield()
 	end
 end))
-
-
 
 --Output checks (blinky)
 --[[
