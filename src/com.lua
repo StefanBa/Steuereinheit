@@ -32,6 +32,7 @@ end
 function write(s,...)
 	local arg = {...}
 	for _, i in pairs(arg) do
+		if type(i) == "number" then i = tostring(i) end
 		s = s .. SEP .. i
 	end
 	if cmd_on then

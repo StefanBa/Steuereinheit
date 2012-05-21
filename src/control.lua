@@ -18,7 +18,11 @@ local ack = "ack"
 local ret = "ret"
 
 local function tmr_handler()
-  get.store("update")
+	local t = {}
+ 	for i,v in pairs(conf.get("update")) do
+		t[i] = kit.IO[v].real
+ 	end
+ 	com.write(ret,"remote",unpack(t))
 end
 
 function init()
@@ -140,6 +144,7 @@ function set.remote(s , time)
 	elseif s == "off" then
 		tmr.set_match_int( id, 0, tmr.INT_CYCLIC );
 		cpu.cli( cpu.INT_TMR_MATCH, id )
+		com.write(ack)
 	end
 end
 
