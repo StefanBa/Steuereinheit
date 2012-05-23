@@ -9,8 +9,6 @@ require "conf"
 set = {}												--müssen global sein, wegen loadstring
 get = {}
 
-threadstart = 1
-threadend = 2
 boardID = ""
 
 local mode = "stop"					--kann stop, run (oder debug??) sein
@@ -27,13 +25,19 @@ end
 
 function init()
 	--pio.pin.sethigh( kit.RstWLAN )
+	
 	cmd.on()
-	local mac = cmd.getSettings("mac")
+	local mac = cmd.get("get mac", "Mac Addr")
+	local time = cmd.get("show t t", "RTC")
 	cmd.off()
-	local mac2, mac1, mac0 = string.match(mac["Mac Addr"], "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
+	
+	local mac2, mac1, mac0 = string.match(mac, "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
 	boardID =  mac2 .. mac1 .. mac0
 	mac, mac2, mac1, mac0 = nil, nil, nil, nil
 	print("boardID = ".. boardID )
+	
+	os.settime(time + 2*3600)
+	
 	cpu.set_int_handler( cpu.INT_TMR_MATCH, tmr_handler )
 end
 
@@ -41,25 +45,22 @@ function get.ack()
 	com.write(ret, ack)
 end
 
-function set.devName(deviceid)
+function set.devName(deviceId)
 	local s = " "
-	deviceid = deviceid.. s:rep( 26 - deviceid:len() ) .. boardID
+	deviceId = deviceId.. s:rep( 26 - deviceId:len() ) .. boardID	--boardID an hinterster Stelle anfügen
+	deviceId = deviceId:gsub(" ", "$")								--Leerschläge mit $ ersetzen
 	cmd.on()
-	cmd.setDeviceid(deviceid)
-	local option = cmd.getSettings("option")			--der Name zurückschreiben, der wirklich im Speicher steht
+	cmd.set("set opt deviceid "..deviceId)
 	cmd.off()
-	if option.DeviceId == deviceid then
-		com.write(ack)
-	end
+	com.write(ack)
 end
 
 function get.devName()
 	cmd.on()
-	local option = cmd.getSettings("option")
+	local deviceId = cmd.get("get option", "DeviceId")
+	cmd.save()
 	cmd.off()
-	if option then
-		com.write(ret, option.DeviceId)
-	end
+	com.write(ret, deviceId)
 end
 
 function set.io(id, value)
@@ -87,13 +88,16 @@ end
 function set.program(s)
 	if s == "run" then
 		mode = "run"
-		threadend = #threads
+		require"prog"
+		_G.threadend = #threads
 	elseif s == "stop" then
 		mode = "stop"
-		threadend = 4
+		_G.threadend = 4
+		package.loaded["prog"] = nil
 		kit.reset("merge")
 		kit.reset("custom")
-	end
+		
+	else return end
 	com.write(ack)
 end
 
@@ -148,21 +152,16 @@ function set.remote(s , time)
 	end
 end
 
+function get.time()
+	com.write(ret,os.date())
+end
+
 function set.cleanfile()
 	file = io.open("/mmc/boardconf.lua", "w")
 	file:write("")
 	file:flush()
 	file:close()
 	print("boardconf.lua cleaned")
-end
-
-function get.settings(command)
-	cmd.on()
-	local settings = cmd.getSettings(command)
-	cmd.off()
-	for k,v in pairs(settings) do
-		print(k .. " = " .. v .. "\r\n")
-	end
 end
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!

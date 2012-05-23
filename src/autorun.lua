@@ -1,4 +1,4 @@
---[[
+
 local showio = false
 printold = print
 function printnew(...)
@@ -7,7 +7,6 @@ function printnew(...)
 	end
 end
 print = printnew
---]]
 
 require "conf"
 require "kit"
@@ -15,20 +14,25 @@ require "control"
 require "com"
 require "cmd"
 
+
 term.clrscr()
 print("\n\r Android-basiertes Home Automation System \n\r")
 
 threads = {}
+threadstart = 1
+threadend = 2
 
+--thread1: init
 table.insert(threads, coroutine.create(function ()
 	com.init()
 	control.init()
 	conf.init()
 	conf.update()
-	control.threadstart = 2
-	control.threadend = 4
+	threadstart = 2
+	threadend = 4
 end))
 
+--thread2: com
 table.insert(threads, coroutine.create(function ()
 	while true do
 		com.run()
@@ -36,6 +40,7 @@ table.insert(threads, coroutine.create(function ()
 	end
 end))
 
+--thread3: control
 table.insert(threads, coroutine.create(function ()
 	while true do
 		control.run()
@@ -43,6 +48,7 @@ table.insert(threads, coroutine.create(function ()
 	end
 end))
 
+--thread4: kit
 table.insert(threads, coroutine.create(function ()
 	while true do
 		kit.run()
@@ -50,16 +56,14 @@ table.insert(threads, coroutine.create(function ()
 	end
 end))
 
-dofile("/rom/prog.lc")
-
 local ram, rammax = 0, 0
 
 while true do
 	local state, msg
-	for i = control.threadstart, control.threadend do
+	for i = threadstart, threadend do
 		state, msg = coroutine.resume(threads[i])
 		if not state then
-			print(msg)
+			print("error message:",msg)
 			break
 		end
 	end
@@ -74,7 +78,7 @@ while true do
 			term.clrscr()
 		end			
 	end
---[[	
+	
 	if showio then
 		local line = 1
 		term.print( 1, line, "ID real custom merge adress\n")
@@ -87,13 +91,14 @@ while true do
 			term.print( 1, line, i, string.format(" %4d %4d %4d %4d\n", kit.IO[i].real, custom, merge, kit.IO[i].adress ) )
 		end
 	end
-	--]]
+--[[
 	ram = collectgarbage'count'		--
 	if ram > rammax then
 		print(ram)
 		rammax = ram
 	end
-
+--]]
+	
 	if not state then break end
 	
 	key = term.getchar( term.NOWAIT )

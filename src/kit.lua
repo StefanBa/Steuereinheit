@@ -18,7 +18,7 @@ pio.pin.setpull( pio.PULLUP, BTN_SELECT, BTN_WPS )
 pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD )
 
 local adc_smoothing = 4
-local adc_timer = 2 
+local adc_timer = 3 
 local adc_f = 4
 local tsample
 

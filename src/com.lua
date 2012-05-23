@@ -13,6 +13,7 @@ local connected = true
 local END1 = "\r"
 local END2 = "\n"
 local SEP = ";"
+local timer_id = 1
 
 function init()
 	local baudhw = uart.setup(uart_id, 9600, 8, uart.PAR_NONE, uart.STOP_1 )
@@ -65,13 +66,13 @@ function recv()
 	local input, data
 	input = uart.read( uart_id, '*l', uart.NO_TIMEOUT)
 	if input == "" then return end
-	local tstart = tmr.start( 0 )
+	local tstart = tmr.start( timer_id )
 	
 	while input:sub(-1,-1) ~= END1 do
 		data = uart.read( uart_id, '*l', uart.NO_TIMEOUT)
 		input = input .. data
 		checkconnect(input)
-		local delta = tmr.getdiffnow( 0, tstart )
+		local delta = tmr.getdiffnow( timer_id, tstart )
 		if delta > (200000) then
 			print("timeout: " , input)
 			input = ""

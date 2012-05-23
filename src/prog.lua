@@ -1,3 +1,6 @@
+
+module(..., package.seeall)
+
 --[[
 local function mydelay(t)
 	local tstart = tmr.start( 3 )
