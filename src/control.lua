@@ -25,10 +25,12 @@ end
 
 function init()
 	--pio.pin.sethigh( kit.RstWLAN )
+	pio.pin.sethigh( kit.RTC_PIN )
 	
 	cmd.on()
 	local mac = cmd.get("get mac", "Mac Addr")
 	local time = cmd.get("show t t", "RTC")
+	print("time:   ", time)
 	cmd.off()
 	
 	local mac2, mac1, mac0 = string.match(mac, "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
@@ -88,12 +90,12 @@ end
 function set.program(s)
 	if s == "run" then
 		mode = "run"
-		require"prog"
+		require"program"
 		_G.threadend = #threads
 	elseif s == "stop" then
 		mode = "stop"
 		_G.threadend = 4
-		package.loaded["prog"] = nil
+		package.loaded["program"] = nil
 		kit.reset("merge")
 		kit.reset("custom")
 		

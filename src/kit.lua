@@ -10,12 +10,13 @@ BTN_WPS 	= pio.PE_3
 LED_GRUN  	= pio.PB_6
 LED_ORANGE 	= pio.PB_5
 CMD 		= pio.PA_7
+RTC_PIN		= pio.PC_7
 --RstWLAN 	= pio.PA_6
 
 pio.pin.setdir( pio.INPUT, BTN_SELECT, BTN_WPS )
 pio.pin.setpull( pio.PULLUP, BTN_SELECT, BTN_WPS )
 --pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD, RstWLAN )
-pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD )
+pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD, RTC_PIN )
 
 local adc_smoothing = 4
 local adc_timer = 3 
