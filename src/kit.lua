@@ -5,18 +5,10 @@ require "conf"
 
 local pressed = {}
 local t_update = {}
-BTN_SELECT  = pio.PB_7
-BTN_WPS 	= pio.PE_3
-LED_GRUN  	= pio.PB_6
-LED_ORANGE 	= pio.PB_5
-CMD 		= pio.PA_7
-RTC_PIN		= pio.PC_7
---RstWLAN 	= pio.PA_6
 
-pio.pin.setdir( pio.INPUT, BTN_SELECT, BTN_WPS )
-pio.pin.setpull( pio.PULLUP, BTN_SELECT, BTN_WPS )
---pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD, RstWLAN )
-pio.pin.setdir( pio.OUTPUT, LED_GRUN, LED_ORANGE, CMD, RTC_PIN )
+BTN_WPS 	= pio.PE_2
+pio.pin.setdir( pio.INPUT, BTN_WPS )
+pio.pin.setpull( pio.PULLUP, BTN_WPS )
 
 local adc_smoothing = 4
 local adc_timer = 3 
@@ -42,38 +34,34 @@ button_clicked = function( button )
 end
 
 IO = {
-		DO0 = {adress = pio.PH_4},
-		DO1 = {adress = pio.PH_5},
-		DO2 = {adress = pio.PH_6},
-		DO3 = {adress = pio.PH_7},
-		DO4 = {adress = pio.PI_0},
-		DO5 = {adress = pio.PI_1},
-		DO6 = {adress = pio.PI_2},
-		DO7 = {adress = pio.PI_3},
-		DO8 = {adress = pio.PI_4},
-		DO9 = {adress = pio.PI_5},
+		DO0 = {adress = pio.PB_4},
+		DO1 = {adress = pio.PB_5},
+		DO2 = {adress = pio.PB_6},
+		DO3 = {adress = pio.PB_7},
+		DO4 = {adress = pio.PA_6},
+		DO5 = {adress = pio.PA_7},
+		DO6 = {adress = pio.PF_0},
+		DO7 = {adress = pio.PH_7},
 	
-		DI9 = {adress = pio.PF_0},			--IO TESTBOARD ADRESSEN!!!
-		DI0 = {adress = pio.PF_1},
-		DI1 = {adress = pio.PF_2},
-		DI2 = {adress = pio.PF_3},
-		DI3 = {adress = pio.PF_4},
-		DI4 = {adress = pio.PF_5},
-		DI5 = {adress = pio.PH_0},
-		DI6 = {adress = pio.PH_1},
-		DI7 = {adress = pio.PH_2},
-		DI8 = {adress = pio.PH_3},
+		DI0 = {adress = pio.PD_7},
+		DI1 = {adress = pio.PD_6},
+		DI2 = {adress = pio.PD_5},
+		DI3 = {adress = pio.PD_4},
+		DI4 = {adress = pio.PF_3},
+		DI5 = {adress = pio.PF_2},
+		DI6 = {adress = pio.PF_1},
+		DI7 = {adress = pio.PH_6},
 				
 		AI0 = {adress = 0},
-		AI1 = {adress = 1},
-		AI2 = {adress = 2},
-		AI3 = {adress = 3},
+		AI1 = {adress = 3},
+		AI2 = {adress = 1},
+		AI3 = {adress = 2},
 		
-		AO0 = {adress = 0},
-		AO1 = {adress = 1},
-		AO2 = {adress = 2},
-		AO3 = {adress = 3}
-		}
+		AO0 = {adress = 2},
+		AO1 = {adress = 3},
+		AO2 = {adress = 0},
+		AO3 = {adress = 1}
+	}
 
 SORT = {}
 for n in pairs(IO) do SORT[#SORT + 1] = n end

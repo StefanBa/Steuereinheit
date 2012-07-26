@@ -9,7 +9,7 @@ require "conf"
 set = {}												--müssen global sein, wegen loadstring
 get = {}
 
-boardID = ""
+local boardID = ""
 
 local mode = "stop"					--kann stop, run (oder debug??) sein
 local ack = "ack"
@@ -24,22 +24,16 @@ local function tmr_handler()
 end
 
 function init()
-	--pio.pin.sethigh( kit.RstWLAN )
-	pio.pin.sethigh( kit.RTC_PIN )
-	
 	cmd.on()
 	local mac = cmd.get("get mac", "Mac Addr")
-	local time = cmd.get("show t t", "RTC")
-	print("time:   ", time)
 	cmd.off()
 	
 	local mac2, mac1, mac0 = string.match(mac, "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
 	boardID =  mac2 .. mac1 .. mac0
 	mac, mac2, mac1, mac0 = nil, nil, nil, nil
-	print("boardID = ".. boardID )
-	
-	os.settime(time + 2*3600)
-	
+	print( "boardID: ".. boardID )
+	set.time("init")
+	conf.set("boardID")
 	cpu.set_int_handler( cpu.INT_TMR_MATCH, tmr_handler )
 end
 
@@ -90,12 +84,12 @@ end
 function set.program(s)
 	if s == "run" then
 		mode = "run"
-		require"program"
+		require"prog"
 		_G.threadend = #threads
 	elseif s == "stop" then
 		mode = "stop"
 		_G.threadend = 4
-		package.loaded["program"] = nil
+		package.loaded["prog"] = nil
 		kit.reset("merge")
 		kit.reset("custom")
 		
@@ -154,6 +148,27 @@ function set.remote(s , time)
 	end
 end
 
+function set.time(arg)
+	local time = tonumber(arg)
+	local offset = 3600 * unpack( conf.get( "timezone" ) )
+	local server = unpack( conf.get( "timeserver" ) )
+	
+	if not time then						--falls Zeit nicht manuell gestellt
+		cmd.on()
+		cmd.set("set time ad " .. server)
+		cmd.set("set time ena 1")
+		cmd.save()
+		time = cmd.get("show t t", "RTC")
+		cmd.off()
+	end
+	
+	os.settime(time + offset)
+	print( "time:    ", os.date() )
+	if arg == "init" then return end		--falls Zeitinitialisierung, kein ack
+	com.write(ack)	
+end
+
+
 function get.time()
 	com.write(ret,os.date())
 end
@@ -165,6 +180,7 @@ function set.cleanfile()
 	file:close()
 	print("boardconf.lua cleaned")
 end
+
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!
 	local fstring = data[1] .. "." .. data[2]
@@ -203,5 +219,9 @@ function run()
 	if input then
 		achieve(input)
 	end
+	if kit.button_clicked(kit.BTN_WPS) then
+		cmd.on()
+		cmd.wps()
+	end	
 end
 	

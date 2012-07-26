@@ -19,12 +19,13 @@ local function findText(text, t)
 		coroutine.yield()
 	end
 	if not t then							--falls die Funktion nicht als Delay verwendet wurde
+		print(text)
 		error("Text could not be found")
 	end
 end
 
 function on()
-	com.cmd_on = true
+	com.status = "cmd"
 	findText("",300000)
 	uart.write(com.uart_id, "$$$")			-- kein Endzeichen senden
 	findText("CMD")
@@ -33,7 +34,7 @@ end
 function off()
 	com.write("exit")
 	findText("EXIT")
-	com.cmd_on = false
+	com.status = "normal"
 end
 
 function set(command)
@@ -56,4 +57,22 @@ function get(command, index)
 		end
 	end
 	error("wifly returned not required index")
+end
+
+function wps()
+	print("wps start")
+	com.write("wps\r")
+	while true do
+		input = com.read()
+		if input then
+			if input:find("FAILED") or input:find("SUCCESS") then
+				findText("",3000000)			--3s Delay (WLAN-Modul macht Reboot)
+				com.status = "normal"
+				com.checkconnect("*CLOS*")		--Verbindung ist unterbrochen
+				print("wps finished")
+				break
+			end
+		end
+		coroutine.yield()
+	end
 end

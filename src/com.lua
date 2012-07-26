@@ -5,11 +5,11 @@ require "kit"
 require "list"
 
 uart_id = 0
-cmd_on = false
+status = "normal"					--status kann sein: "normal", "cmd", file
 
 local sendList = list.List:new()
 local recvList = list.List:new()
-local connected = true
+local connected = true				--init-Wert default: false (zu Debugzwecken: true)
 local END1 = "\r"
 local END2 = "\n"
 local SEP = ";"
@@ -20,7 +20,7 @@ function init()
 	uart.set_buffer( uart_id, 256 )
 end
 
-local function checkconnect(input)
+function checkconnect(input)
 	if input:find("*OPEN*") then
 		if not connected then print("connected") end
 		connected = true
@@ -36,7 +36,7 @@ function write(s,...)
 		if type(i) == "number" then i = tostring(i) end
 		s = s .. SEP .. i
 	end
-	if cmd_on then
+	if status == "cmd" then
 		sendList:pushfirst(s .. END1)
 		return
 	end
@@ -45,9 +45,12 @@ end
 
 function read()
 	local recv = recvList:poplast()
-	if cmd_on or recv == nil then
+	if recv == nil then return recv end
+	
+	if status == "cmd" then
 		return recv
 	end
+	
 	local splitter = {}
 	for k in recv:gmatch("[^%"..SEP.."]+") do
 		splitter[#splitter + 1] = k
@@ -59,7 +62,7 @@ function send()
 	local output = sendList:poplast()
 	if output == nil then return end
 	uart.write( uart_id, output)
-	print( "sent:    " , output )
+	print( "sent:    " , output:sub(1,-2) )
 end
 
 function recv()
@@ -76,25 +79,37 @@ function recv()
 		if delta > (200000) then
 			print("timeout: " , input)
 			input = ""
-			break
+			return
 		end
 		coroutine.yield()					  	
 	end
 	
-	checkconnect(input)
-	input = input:sub(1,-2)                     --\r abschneiden
-	if connected then
-		print( "received:" , input )
+	if status == "cmd" then								--falls WLAN-Modul im cmd-Mode
+		print( "cmd received:", input )
 		recvList:pushfirst( input )
+		return
 	end
+	
+	if not connected then
+		print( "not received:" , input)
+		return
+	end
+	
+	--if status == "file" then end
+	
+	input = input:sub(1,-2)                     --\r abschneiden
+	print( "received:" , input )
+	recvList:pushfirst( input )
+
 end
 
 function run()
 	recv()
 	send()
-	test()
+--	test()
 end
 
+--[[
 function test()
 	local prot
 	if kit.button_clicked( kit.BTN_SELECT ) then
@@ -106,7 +121,7 @@ function test()
 --		print("sendlist lenght: "..#recvList)
 --	end
 end
-
+--]]
 
 
 

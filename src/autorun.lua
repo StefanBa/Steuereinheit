@@ -14,7 +14,6 @@ require "control"
 require "com"
 require "cmd"
 
-
 term.clrscr()
 print("\n\r Android-basiertes Home Automation System \n\r")
 
@@ -25,9 +24,8 @@ threadend = 2
 --thread1: init
 table.insert(threads, coroutine.create(function ()
 	com.init()
-	control.init()
 	conf.init()
-	conf.update()
+	control.init()
 	threadstart = 2
 	threadend = 4
 end))
@@ -67,7 +65,13 @@ while true do
 			break
 		end
 	end
-
+	
+	if not state then break end
+	
+	key = term.getchar( term.NOWAIT )
+  	if key == term.KC_ESC then break end -- exit if user hits Escape
+	
+--[[
 	if kit.button_clicked(kit.BTN_WPS) then
 		if showio then
 			showio = false
@@ -91,6 +95,8 @@ while true do
 			term.print( 1, line, i, string.format(" %4d %4d %4d %4d\n", kit.IO[i].real, custom, merge, kit.IO[i].adress ) )
 		end
 	end
+--]]
+
 --[[
 	ram = collectgarbage'count'		--
 	if ram > rammax then
@@ -98,12 +104,7 @@ while true do
 		rammax = ram
 	end
 --]]
-	
-	if not state then break end
-	
-	key = term.getchar( term.NOWAIT )
-  	if key == term.KC_ESC then break end -- exit if user hits Escape
-  	
+ 	
 end
 
 

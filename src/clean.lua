@@ -1,0 +1,5 @@
+file = io.open("/mmc/boardconf.lua", "w")
+file:write("")
+file:flush()
+file:close()
+print("boardconf.lua cleaned")

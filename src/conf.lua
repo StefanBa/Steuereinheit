@@ -37,7 +37,17 @@ local function execute()
 	file:close()
 end
 
-function update()
+local function default()
+	_G.const = {
+		timezone = {"2"},
+		timeserver = {"62.2.85.147"},
+		cfg		= {"0", "0", "0"},			--Name, CreateID, ChangeID
+		prg		= {"0", "0", "0"},
+		update = kit.SORT
+	}
+end
+
+function init()
 	local state = pcall( function ()
 			dofile("/mmc/boardconf.lua")
 		end )
@@ -45,19 +55,10 @@ function update()
 	if ( state and BOARDCONF ) then
 		print("updated _G.const with file")
 	else											
-		init()
+		default()
 		execute()
 		print("updated _G.const with init-values")
 	end
-end
-
-function init()
-	_G.const = {
-		boardID	= {control.boardID},
-		configID	= {"none"},
-		programID	= {"none"},
-		update = kit.SORT
-	}
 end
 
 function set(id, value)
