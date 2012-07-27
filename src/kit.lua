@@ -95,7 +95,7 @@ end
 adc.sample({0,1,2,3},128)
 
 function update()
-	for _,i in pairs(conf.get("update")) do
+	for _,i in pairs(conf.get("update", "*t")) do
 		if i:find("DI") then
 			IO[i].real = pio.pin.getval( IO[i].adress )
 			
@@ -117,7 +117,7 @@ function update()
 end
 
 local function merge()
-	for _,i in pairs(conf.get("update")) do
+	for _,i in pairs(conf.get("update", "*t")) do
 		if IO[i].custom then
 			IO[i].merge = IO[i].custom
 		else

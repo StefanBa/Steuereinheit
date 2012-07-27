@@ -55,6 +55,7 @@ table.insert(threads, coroutine.create(function ()
 end))
 
 local ram, rammax = 0, 0
+local tstart = tmr.start(3)	--für ramcollectblabla
 
 while true do
 	local state, msg
@@ -99,12 +100,12 @@ while true do
 
 --[[
 	ram = collectgarbage'count'		--
-	if ram > rammax then
+
+	if ( tmr.getdiffnow( 3, tstart ) > 200000 ) then
 		print(ram)
-		rammax = ram
+		tstart = tmr.start(3)
 	end
 --]]
- 	
 end
 
 

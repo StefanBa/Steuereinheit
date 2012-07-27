@@ -32,16 +32,19 @@ local function execute()
 	file = io.open("/mmc/boardconf.lua", "w")
 	file:write("_G.const = ")
 	serialize(_G.const)
-	file:write("\nBOARDCONF = true\n")
+	file:write("\nCONFCOMPLETE = true\n")
 	file:flush()
 	file:close()
 end
 
 local function default()
 	_G.const = {
+		boardID = {"none"},
+		devName = {"SARHA"},
+		wlan = {"Not Your Business", "LM3S9D92embeddedluaX"},	--SSID, Password
 		timezone = {"2"},
 		timeserver = {"62.2.85.147"},
-		cfg		= {"0", "0", "0"},			--Name, CreateID, ChangeID
+		cfg		= {"0", "0", "0"},								--Name, CreateID, ChangeID
 		prg		= {"0", "0", "0"},
 		update = kit.SORT
 	}
@@ -52,7 +55,7 @@ function init()
 			dofile("/mmc/boardconf.lua")
 		end )
 		
-	if ( state and BOARDCONF ) then
+	if ( state and CONFCOMPLETE ) then
 		print("updated _G.const with file")
 	else											
 		default()
@@ -66,7 +69,10 @@ function set(id, value)
 	execute()
 end
 
-function get(id)
-	return _G.const[id]
+function get(id, format)
+	if format == "*t" then
+		return _G.const[id]
+	end
+	return unpack( _G.const[id] )
 end
 

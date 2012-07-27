@@ -1,0 +1,434 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/..\src\cmd.html">..\src\cmd</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\com.html">..\src\com</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\conf.html">..\src\conf</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\control.html">..\src\control</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\file.html">..\src\file</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\kit.html">..\src\kit</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\list.html">..\src\list</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\prog.html">..\src\prog</a>
+	</li>
+
+	<li>
+		<a href="../modules/..\src\program.html">..\src\program</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+<h1>Files</h1>
+<ul>
+
+	<li>
+		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
+	</li>
+
+	<li><strong>..\src\cmd.lua</strong></li>
+	
+	<li>
+		<a href="../files/..\src\com.html">..\src\com.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\conf.html">..\src\conf.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\control.html">..\src\control.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\file.html">..\src\file.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\kit.html">..\src\kit.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\large.html">..\src\large.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\list.html">..\src\list.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+	</li>
+
+	<li>
+		<a href="../files/..\src\program.html">..\src\program.lua</a>
+	</li>
+
+</ul>
+
+
+
+
+
+
+</div> <!-- id="navigation" -->
+
+<div id="content">
+
+<h1>File <code>..\src\cmd.lua</code></h1>
+
+
+<p>Übernimmt die Ansteuerung des Command-Mode vom WLAN-Modul. </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
+
+
+
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#findText">findText</a>&nbsp;(text, t)</td>
+	<td class="summary">Wartet eine gewisse Zeit auf einen bestimmten Text und gibt diesen zurück </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get">get</a>&nbsp;(command, index)</td>
+	<td class="summary">Holt sich Konfigurationsdetails vom WLAN-Modul.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#off">off</a>&nbsp;(nocmd)</td>
+	<td class="summary">Verlässt CMD-Mode.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#on">on</a>&nbsp;(nocmd)</td>
+	<td class="summary">Geht in CMD-Mode.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#reboot">reboot</a>&nbsp;()</td>
+	<td class="summary">Führt ein Reboot des WLAN-Modules aus.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#save">save</a>&nbsp;()</td>
+	<td class="summary">Speichert die aktuelle Konfiguration des WLAN-Moduls.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set">set</a>&nbsp;(command)</td>
+	<td class="summary">Führt Befehl aus für WLAN-Modul.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#wps">wps</a>&nbsp;()</td>
+	<td class="summary">Startet die WPS-App des WLAN-Moduls.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="findText"></a><strong>findText</strong>&nbsp;(text, t)</dt>
+<dd>
+Wartet eine gewisse Zeit auf einen bestimmten Text und gibt diesen zurück
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>text</em></code>: Text, auf den gewartet werden soll. Leerer String -> delay
+	</li>
+	
+	<li>
+	  <code><em>t</em></code>: Zeit in us (optional, default ist 2s)
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>String, der den gesuchten Text enthält</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get"></a><strong>get</strong>&nbsp;(command, index)</dt>
+<dd>
+Holt sich Konfigurationsdetails vom WLAN-Modul.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>command</em></code>: get-Command laut Manual ohne gesuchte Varible (letztes Argument)
+	</li>
+	
+	<li>
+	  <code><em>index</em></code>: Letztes Argument vom Command; Variable die abgefragt wird
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>Wert der gesuchten Variable</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="off"></a><strong>off</strong>&nbsp;(nocmd)</dt>
+<dd>
+Verlässt CMD-Mode.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, wenn true so wird Funktion nicht ausgeführt
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="on"></a><strong>on</strong>&nbsp;(nocmd)</dt>
+<dd>
+Geht in CMD-Mode.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, wenn true so wird Funktion nicht ausgeführt
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="reboot"></a><strong>reboot</strong>&nbsp;()</dt>
+<dd>
+Führt ein Reboot des WLAN-Modules aus.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="save"></a><strong>save</strong>&nbsp;()</dt>
+<dd>
+Speichert die aktuelle Konfiguration des WLAN-Moduls. Wartet auf Bestätigung.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set"></a><strong>set</strong>&nbsp;(command)</dt>
+<dd>
+Führt Befehl aus für WLAN-Modul. Wartet auf Bestätigung "AOK" des Moduls.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>command</em></code>: Befehl, wie er laut manual übergeben werden muss
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="wps"></a><strong>wps</strong>&nbsp;()</dt>
+<dd>
+Startet die WPS-App des WLAN-Moduls.
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>true, falls wps erfolgreich</ul>
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>

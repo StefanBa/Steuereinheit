@@ -9,7 +9,7 @@ status = "normal"					--status kann sein: "normal", "cmd", file
 
 local sendList = list.List:new()
 local recvList = list.List:new()
-local connected = true				--init-Wert default: false (zu Debugzwecken: true)
+local connected = false				--init-Wert default: false (zu Debugzwecken: true)
 local END1 = "\r"
 local END2 = "\n"
 local SEP = ";"
@@ -94,13 +94,10 @@ function recv()
 		print( "not received:" , input)
 		return
 	end
-	
-	--if status == "file" then end
-	
+		
 	input = input:sub(1,-2)                     --\r abschneiden
 	print( "received:" , input )
 	recvList:pushfirst( input )
-
 end
 
 function run()

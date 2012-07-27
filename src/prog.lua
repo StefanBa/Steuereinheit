@@ -47,7 +47,10 @@ table.insert(threads, coroutine.create(function ()
 end))
 
 ]]--
+
+
 table.insert(threads, coroutine.create(function ()
+t = {}
 	while true do
 		for i in pairs(kit.IO) do	
 			if i:find("DO") then
@@ -60,7 +63,10 @@ table.insert(threads, coroutine.create(function ()
 		end
 		coroutine.yield()
 	end
+	
 end))
+
+PROGCOMPLETE = true
 
 --Output checks (blinky)
 --[[

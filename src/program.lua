@@ -11,7 +11,7 @@ Change ID: 1339594906
 
 module(..., package.seeall)
 
-
+local tstartV0
 
 function state0()
 	coroutine.yield()

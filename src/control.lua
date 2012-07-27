@@ -9,15 +9,14 @@ require "conf"
 set = {}												--müssen global sein, wegen loadstring
 get = {}
 
-local boardID = ""
-
 local mode = "stop"					--kann stop, run (oder debug??) sein
 local ack = "ack"
 local ret = "ret"
+local nak = "nak"
 
 local function tmr_handler()
 	local t = {}
- 	for i,v in pairs(conf.get("update")) do
+ 	for i,v in pairs(conf.get("update", "*t")) do
 		t[i] = kit.IO[v].real
  	end
  	com.write(ret,"remote",unpack(t))
@@ -25,15 +24,11 @@ end
 
 function init()
 	cmd.on()
-	local mac = cmd.get("get mac", "Mac Addr")
-	cmd.off()
-	
-	local mac2, mac1, mac0 = string.match(mac, "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
-	boardID =  mac2 .. mac1 .. mac0
-	mac, mac2, mac1, mac0 = nil, nil, nil, nil
-	print( "boardID: ".. boardID )
-	set.time("init")
-	conf.set("boardID")
+	set.boardid( true )
+	set.devName( conf.get("devName"), true )
+	set.time( "init", true )
+	set.wlan( nil, nil, true)
+	cmd.reboot()
 	cpu.set_int_handler( cpu.INT_TMR_MATCH, tmr_handler )
 end
 
@@ -41,13 +36,15 @@ function get.ack()
 	com.write(ret, ack)
 end
 
-function set.devName(deviceId)
+function set.devName(deviceId, nocmd)
 	local s = " "
+	local boardID = conf.get("boardID")
+	conf.set("devName", {deviceId})
 	deviceId = deviceId.. s:rep( 26 - deviceId:len() ) .. boardID	--boardID an hinterster Stelle anfügen
 	deviceId = deviceId:gsub(" ", "$")								--Leerschläge mit $ ersetzen
-	cmd.on()
+	cmd.on(nocmd)
 	cmd.set("set opt deviceid "..deviceId)
-	cmd.off()
+	cmd.off(nocmd)
 	com.write(ack)
 end
 
@@ -57,6 +54,46 @@ function get.devName()
 	cmd.save()
 	cmd.off()
 	com.write(ret, deviceId)
+end
+
+function set.boardid(nocmd)
+	cmd.on(nocmd)
+	local mac = cmd.get("get mac", "Mac Addr")
+	cmd.off(nocmd)
+	
+	local mac2, mac1, mac0 = string.match(mac, "%w+:%w+:%w+:(%w+):(%w+):(%w+)")
+	local boardID =  mac2 .. mac1 .. mac0
+	mac, mac2, mac1, mac0 = nil, nil, nil, nil
+	conf.set("boardID", {boardID})
+	print( "boardID: ".. boardID )
+end
+
+function set.wlan(ssid, pw, nocmd)
+	if not ssid then
+		local wlan = conf.get("wlan", "*t")
+		ssid = wlan[1]
+		pw   = wlan[2]
+	end
+	ssid = ssid:gsub(" ", "$")
+	pw = pw:gsub(" ", "$")
+	cmd.on(nocmd)
+	cmd.set("set w ssid " .. ssid)
+	cmd.set("set w phrase " .. pw)
+	cmd.save()
+	cmd.off(nocmd)
+end
+
+function set.wps()
+	cmd.on()
+	local success = cmd.wps()
+	if success then
+		cmd.findText("",3000000) 			--Zeit bis WLAN-Modul reboot, connect
+		cmd.on()
+		local ssid = cmd.get("get w", "SSID")
+		local pw = cmd.get("get w", "Passphrase")
+		cmd.off()
+		conf.set("wlan", {ssid, pw})
+	end
 end
 
 function set.io(id, value)
@@ -83,18 +120,35 @@ end
 
 function set.program(s)
 	if s == "run" then
-		mode = "run"
-		require"prog"
-		_G.threadend = #threads
+		local state = pcall( function ()		--programm in geschützter Umgebung starten
+			require"progi"
+		end )
+		
+		if ( state and prog.PROGCOMPLETE ) then
+			print("program running")
+			_G.threadend = #threads
+			mode = "run"
+			com.write(ack)
+		else
+			print("load program failed")
+			com.write(nak)
+		end
 	elseif s == "stop" then
 		mode = "stop"
 		_G.threadend = 4
-		package.loaded["prog"] = nil
+		--coroutine.yield()
+		--for i = 5, #threads do
+		--	threads[i] = nil
+		--end
+		package.loaded["prog"] = nil		--unload prog
+		_G["prog"] = nil
 		kit.reset("merge")
 		kit.reset("custom")
-		
-	else return end
-	com.write(ack)
+		print("program stoped")
+		com.write(ack)
+	else
+		return
+	end
 end
 
 function get.program()
@@ -132,7 +186,7 @@ function set.store(key, ...)
 end
 
 function get.store(key)
-	com.write(ret, key, unpack( conf.get(key) ) )
+	com.write( ret, key, conf.get(key) )
 end
 
 function set.remote(s , time)
@@ -148,18 +202,18 @@ function set.remote(s , time)
 	end
 end
 
-function set.time(arg)
+function set.time(arg, nocmd)
 	local time = tonumber(arg)
-	local offset = 3600 * unpack( conf.get( "timezone" ) )
-	local server = unpack( conf.get( "timeserver" ) )
+	local offset = 3600 * conf.get( "timezone" )
+	local server = conf.get( "timeserver" )
 	
 	if not time then						--falls Zeit nicht manuell gestellt
-		cmd.on()
+		cmd.on(nocmd)
 		cmd.set("set time ad " .. server)
 		cmd.set("set time ena 1")
 		cmd.save()
 		time = cmd.get("show t t", "RTC")
-		cmd.off()
+		cmd.off(nocmd)
 	end
 	
 	os.settime(time + offset)
@@ -168,19 +222,9 @@ function set.time(arg)
 	com.write(ack)	
 end
 
-
 function get.time()
-	com.write(ret,os.date())
+	com.write(ret,os.time(),os.date())
 end
-
-function set.cleanfile()
-	file = io.open("/mmc/boardconf.lua", "w")
-	file:write("")
-	file:flush()
-	file:close()
-	print("boardconf.lua cleaned")
-end
-
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!
 	local fstring = data[1] .. "." .. data[2]
@@ -220,8 +264,7 @@ function run()
 		achieve(input)
 	end
 	if kit.button_clicked(kit.BTN_WPS) then
-		cmd.on()
-		cmd.wps()
+		set.wps()
 	end	
 end
 	
