@@ -87,7 +87,7 @@ function set.wps()
 	cmd.on()
 	local success = cmd.wps()
 	if success then
-		cmd.findText("",3000000) 			--Zeit bis WLAN-Modul reboot, connect
+		cmd.findText(3000000) 			--Zeit bis WLAN-Modul reboot, connect
 		cmd.on()
 		local ssid = cmd.get("get w", "SSID")
 		local pw = cmd.get("get w", "Passphrase")
@@ -121,18 +121,25 @@ end
 function set.program(s)
 	if s == "run" then
 		local state = pcall( function ()		--programm in geschützter Umgebung starten
-			require"progi"
+			require"progBenj"
 		end )
+		print("state:   ", state)
 		
-		if ( state and prog.PROGCOMPLETE ) then
-			print("program running")
-			_G.threadend = #threads
-			mode = "run"
-			com.write(ack)
-		else
+		local success = false
+		if state then
+			if progBenj.PROGCOMPLETE then
+				success = true
+				print("program running")
+				_G.threadend = #threads
+				mode = "run"
+				com.write(ack)
+			end
+		end
+		if not success then
 			print("load program failed")
 			com.write(nak)
 		end
+		
 	elseif s == "stop" then
 		mode = "stop"
 		_G.threadend = 4
@@ -140,8 +147,8 @@ function set.program(s)
 		--for i = 5, #threads do
 		--	threads[i] = nil
 		--end
-		package.loaded["prog"] = nil		--unload prog
-		_G["prog"] = nil
+		package.loaded["progBenj"] = nil		--unload prog
+		_G["progBenj"] = nil
 		kit.reset("merge")
 		kit.reset("custom")
 		print("program stoped")
@@ -155,17 +162,31 @@ function get.program()
 	com.write(ret, mode)
 end
 
+local function filetermination(success)
+	if success then
+		print("Übertragung erfolgreich")
+	else
+		print("Übertragung fehlgeschlagen")					--Verbindung Überprüfen
+		cmd.on()
+		local conn = cmd.get("show conn", false, "8")		--Nach String suchen, der 8 enthält (--> connection Status)
+		cmd.off()
+		if conn:sub(4,4) == "1" then						--falls "TCP-Status" == connected
+			com.checkconnect(com.OPEN)
+		else
+			com.checkconnect(com.CLOS)
+		end
+	end
+end
+
 function set.file(filename, filesize)
-	print("recv in")
-	file.recv(filename, filesize)
-	print("recv out")
+	local success = file.recv(filename, filesize)
+	filetermination(success)
 end
 
 function get.file(filename)
-	print("send in")
 	filesize = mymod.getsize(filename)
-	file.send(filename, filesize)
-	print("send out")
+	local success = file.send(filename, filesize)
+	filetermination(success)
 end
 
 function set.store(key, ...)
@@ -190,12 +211,14 @@ function get.store(key)
 end
 
 function set.remote(s , time)
-	local id = tmr.VIRT0
+	local id = tmr.VIRT8
 	local time = time or 1000000	--min für VIRT-TMR: 250000
 	if s == "on" then
 		tmr.set_match_int( id, time, tmr.INT_CYCLIC );
 		cpu.sei( cpu.INT_TMR_MATCH, id )
 	elseif s == "off" then
+		kit.reset("merge")
+		kit.reset("custom")
 		tmr.set_match_int( id, 0, tmr.INT_CYCLIC );
 		cpu.cli( cpu.INT_TMR_MATCH, id )
 		com.write(ack)

@@ -6,6 +6,8 @@ require "list"
 
 uart_id = 0
 status = "normal"					--status kann sein: "normal", "cmd", file
+OPEN = "*OPEN*"
+CLOS = "*CLOS*"
 
 local sendList = list.List:new()
 local recvList = list.List:new()
@@ -21,10 +23,10 @@ function init()
 end
 
 function checkconnect(input)
-	if input:find("*OPEN*") then
+	if input:find(OPEN) then
 		if not connected then print("connected") end
 		connected = true
-	elseif input:find("*CLOS*") then
+	elseif input:find(CLOS) then
 		if connected then print("disconnected") end
 		connected = false
 	end

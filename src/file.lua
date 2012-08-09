@@ -16,32 +16,30 @@ local function checksum(s)
 	for i,v in ipairs(t) do
 		sum = sum + v
 	end
-	print("SUMME:",sum)
 	return bit.band( sum,255 )
 end
 
-local function writeToFile(file)	
+local function writeToFile(file, difflen)	
 	local count = 0
+	local difflen = difflen or BLOCKSIZE
+	print("difflen:  ", difflen)
 	
 	while count ~= TRIES do
 		count = count + 1
 		local input = uart.read( com.uart_id, BLOCKSIZE + 1, TIMEOUT, TIMERID )
-		print("input:",input)
 	
-		local dataBytes = input:sub(1,-2)
+		local dataBytes = input:sub( 1, -2 )
 		local lastByte = string.byte( input:sub(-1) )
 		local checksum = checksum( dataBytes )
-		print("Checksum:" , checksum, "last byte:", lastByte )
+		print("Checksum:" , checksum, "Last Byte:", lastByte )
 		
 		if checksum == lastByte then
-			print("checksum", "ok")
-			file:write( dataBytes )
-			print("write:   ".. dataBytes)
+			file:write( dataBytes:sub( 1, difflen ) )			--Überschüssige Nullen abschneiden
 			uart.write(com.uart_id, ack)
 			return true
 		else
-			print("checksum", "not ok")
 			uart.write(com.uart_id, nak)
+			return false
 		end
 	end
 	return false
@@ -51,7 +49,7 @@ local function readFromFile(file)
 	local count = 0
 	local output = file:read(BLOCKSIZE)
 	local checksum = checksum(output)
-	print("letztes byte von checksum:" .. checksum)
+	print("Checksum:" , checksum)
 	
 	local difflen = BLOCKSIZE - output:len()
 	if difflen ~= 0 then
@@ -63,11 +61,13 @@ local function readFromFile(file)
 	
 	while count ~= TRIES  do
 		count = count + 1
-		print("count:  ", count)
-		uart.write(com.uart_id, output .. string.char( checksum ) )
-		print("data:   " , output .. string.char( checksum ) )					
+		uart.write(com.uart_id, output .. string.char( checksum ) )				
 		local input = uart.read( com.uart_id, ack:len(), TIMEOUT, TIMERID )
-		if input == ack then return true end
+		if input == ack then
+			return true
+		else
+			return false
+		end
 	end
 	
 	return false
@@ -80,26 +80,32 @@ function recv(filename, filesize)
 		print( "Open File:", filename )
 	else
 		uart.write(com.uart_id, nack)
-		return
+		return false
 	end
 	
 	local nReceived = 0
 	local nPakets = math.floor( filesize / BLOCKSIZE )		--Anzahl volle Pakete (Rest wird mit 0 aufgefüllt)
 	local nRest = filesize % BLOCKSIZE
-	if nRest ~= 0 then
-		nPakets = nPakets + 1
-	end	
+
 	print( "Pakete:  ", nPakets)
 
 	while nReceived ~= nPakets do
-		if writeToFile( file, BLOCKSIZE ) then
+		if writeToFile( file ) then
 			nReceived = nReceived + 1
 			print( "PaketNR ok:", nReceived )
+		else
+			return false
 		end
 	end
-	print( "Übertragung erfolgreich" )
+	if nRest ~= 0 then						--letztes Paket
+		if not writeToFile(file, nRest)	then
+			return false
+		end
+	end						
+	
 	file:flush()
 	file:close()
+	return true
 end
 
 function send(filename, filesize)	
@@ -129,16 +135,15 @@ function send(filename, filesize)
 	print( "Open File:", filename )
 	
 	while nSent ~= nPakets do
-		if readFromFile( file, BLOCKSIZE ) then
+		if readFromFile( file ) then
 			nSent = nSent + 1
 			print( "PaketNR ok:", nSent )
 		else
-			print("Übertragung fehlgeschlagen")
-			break
+			return false
 		end
 	end
-	print("Übertragung erfolgreich")
 	file:close()
+	return true
 end
 
 

@@ -33,8 +33,8 @@ function findText(text, t)
 		coroutine.yield()
 	end
 	if not t then							--falls die Funktion nicht als Delay verwendet wurde
-		print(text)
-		error("Text could not be found")
+		local message = text .. " could not be found!"
+		error(message)
 	end
 end
 
@@ -44,9 +44,9 @@ end
 
 function on(nocmd)
 	if nocmd then return end				--falls deaktivert (für init-prozess)
-	com.status = "cmd"
 	findText("",300000)
 	uart.write(com.uart_id, "$$$")			-- kein Endzeichen senden
+	com.status = "cmd"
 	findText("CMD")
 end
 
@@ -92,8 +92,11 @@ end
 -- @param		index Letztes Argument vom Command; Variable die abgefragt wird
 -- @return		Wert der gesuchten Variable
 
-function get(command, index)
+function get(command, index, find)
 	com.write(command)
+	if not index then
+		return findText(find)
+	end
 	for i = 1, 100 do
 		input = findText("=")					
 		local indexNow, value = input:match("(.+)=(.*)")
@@ -126,7 +129,7 @@ function wps()
 		coroutine.yield()
 	end
 	com.status = "normal"
-	com.checkconnect("*CLOS*")		--Verbindung ist unterbrochen
+	com.checkconnect(com.CLOS)		--Verbindung ist unterbrochen
 	print("wps finished")
 	return success
 end
