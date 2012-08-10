@@ -1,8 +1,17 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Kontrolliert die Kommunikation mit App und Wlan-Modul
+-------------------------------------------------------------------------------
 
 module(..., package.seeall)
 
 require "kit"
 require "list"
+require "control"
 
 uart_id = 0
 status = "normal"					--status kann sein: "normal", "cmd", file
@@ -17,20 +26,37 @@ local END2 = "\n"
 local SEP = ";"
 local timer_id = 1
 
+-------------------------------------------------------------------------------
+-- Initialisierung der UART-Schnittstelle
+
 function init()
 	local baudhw = uart.setup(uart_id, 9600, 8, uart.PAR_NONE, uart.STOP_1 )
 	uart.set_buffer( uart_id, 256 )
 end
+
+-------------------------------------------------------------------------------
+-- Überprüft aktueller String, um festzustellen, ob das Wlan-Modul connected
+-- oder disconnected wurde.
+-- @param		input zu überprüfender String
 
 function checkconnect(input)
 	if input:find(OPEN) then
 		if not connected then print("connected") end
 		connected = true
 	elseif input:find(CLOS) then
-		if connected then print("disconnected") end
+		if connected then
+			print("disconnected")
+			control.set.remote("off", nil, true)	--true -> kein ack senden
+		end
 		connected = false
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Schreibt ein String auf die sendList. Mehrere Argumente werden mit Seperator
+-- SEP ";" aneinandergereiht. Ist der status "cmd" so wird nur \r als Endzeichen
+-- verwendet. Bei status "normal" gelten die Endzeichen \r\n
+-- @param		s String, der gepuffert wird.
 
 function write(s,...)
 	local arg = {...}
@@ -44,6 +70,13 @@ function write(s,...)
 	end
 	sendList:pushfirst(s .. END1 .. END2)
 end
+
+-------------------------------------------------------------------------------
+-- Liest recvList aus und gibt letzten Eintrag zurück. Bei status "cmd" wird der
+-- Eintrag nicht weiter verarbeitet. Bei status "normal" wird bei SEP ";" aufgetrennt
+-- und die Parameter als Tabelle zurückgegeben.
+-- @return		recv recvList-Eintrag (status "cmd")
+-- @return		splitter Tabelle mit Parameter (status "normal")
 
 function read()
 	local recv = recvList:poplast()
@@ -60,12 +93,20 @@ function read()
 	return splitter
 end
 
+-------------------------------------------------------------------------------
+-- Sendet letzer Eintrag der sendList auf der UART-Schnittstelle.
+
 function send()
 	local output = sendList:poplast()
 	if output == nil then return end
 	uart.write( uart_id, output)
 	print( "sent:    " , output:sub(1,-2) )
 end
+
+-------------------------------------------------------------------------------
+-- Empfängt auf der UART-Schnittstelle und macht Einträge auf der recvList. Ein zu
+-- empfangender String muss innerhalb von 200ms mit \r abgeschlossen sein. Falls staus
+-- "normal", so muss das WLAN-Modul connected sein.
 
 function recv()
 	local input, data
@@ -101,6 +142,10 @@ function recv()
 	print( "received:" , input )
 	recvList:pushfirst( input )
 end
+
+-------------------------------------------------------------------------------
+-- Funktion der Koroutine. Führt recv() und send() aus um die Kommunikation zu 
+-- ermöglichen
 
 function run()
 	recv()

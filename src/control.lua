@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Implementation des Protokolls. Erzeugt die Funktionsaufrufe dynamisch.
+-------------------------------------------------------------------------------
 
 module(..., package.seeall)
 
@@ -14,6 +22,10 @@ local ack = "ack"
 local ret = "ret"
 local nak = "nak"
 
+-------------------------------------------------------------------------------
+-- Timer Handler Function. Ist das Android-Device im Remote-Modus, so wird diese
+-- Funktion periodisch aufgerufen, und sendet die aktuellen IO-Werte.
+
 local function tmr_handler()
 	local t = {}
  	for i,v in pairs(conf.get("update", "*t")) do
@@ -21,6 +33,11 @@ local function tmr_handler()
  	end
  	com.write(ret,"remote",unpack(t))
 end
+
+-------------------------------------------------------------------------------
+-- Initialisiert und konfiguriert das WLAN-Modul mittels der Persistenten Werten
+-- der SD-Karte. So ist das WLAN-Modul nach jedem Reset anhand der SD-Karte
+-- konfiguriert.
 
 function init()
 	cmd.on()
@@ -32,9 +49,19 @@ function init()
 	cpu.set_int_handler( cpu.INT_TMR_MATCH, tmr_handler )
 end
 
+-------------------------------------------------------------------------------
+-- Sendet ein "ack" um ein Verbindungstest zu ermöglichen
+
 function get.ack()
 	com.write(ret, ack)
 end
+
+-------------------------------------------------------------------------------
+-- Verändert den deviceName der Steuereinheit. Dem Namen wird an hinterster Stelle
+-- die MAC-Adresse des WLAN-Moduls angehängt um die Steuereinheit eindeutig
+-- identifizieren zu können. Der deviceName wird zusätzlich auf der SD-Karte gespeichert.
+-- @param		deviceId zu aktualisiernder deviceName
+-- @param		nocmd optional, true für initialisierung
 
 function set.devName(deviceId, nocmd)
 	local s = " "
@@ -48,6 +75,9 @@ function set.devName(deviceId, nocmd)
 	com.write(ack)
 end
 
+-------------------------------------------------------------------------------
+-- Sendet aktueller deviceName des WLAN-Moduls.
+
 function get.devName()
 	cmd.on()
 	local deviceId = cmd.get("get option", "DeviceId")
@@ -55,6 +85,10 @@ function get.devName()
 	cmd.off()
 	com.write(ret, deviceId)
 end
+
+-------------------------------------------------------------------------------
+-- Holt die MAC-Adresse des WLAN-Moduls und Speichert diesen auf der SD-Karte.
+-- @param		nocmd optional, true für initialisierung
 
 function set.boardid(nocmd)
 	cmd.on(nocmd)
@@ -67,6 +101,12 @@ function set.boardid(nocmd)
 	conf.set("boardID", {boardID})
 	print( "boardID: ".. boardID )
 end
+
+-------------------------------------------------------------------------------
+-- Konfiguriert die wlan-Parameter des WLAN-Moduls anhand der SD-Karte
+-- @param		ssid optional, SSID vom Netzwerk (manuell nicht von SD-Karte)
+-- @param		pw optional, zugehöriges Passwort (manuell nicht von SD-Karte)
+-- @param		nocmd optional, true für initialisierung
 
 function set.wlan(ssid, pw, nocmd)
 	if not ssid then
@@ -83,6 +123,10 @@ function set.wlan(ssid, pw, nocmd)
 	cmd.off(nocmd)
 end
 
+-------------------------------------------------------------------------------
+-- Führt die WPS-App des WLAN-Moduls aus. Die wlan-Konfigurationen werden auf
+-- der SD-Karte gespeichert.
+
 function set.wps()
 	cmd.on()
 	local success = cmd.wps()
@@ -95,6 +139,13 @@ function set.wps()
 		conf.set("wlan", {ssid, pw})
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Setzt IO-Werte. Ist das Program "run", so werden die "custom"-Werte aktualisiert,
+-- so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "stop",
+-- werden die "real"-Werte aktualisiert, welche normalerweise verwendet werden.
+-- @param		id ID vom Ein- oder Ausgang
+-- @param		value Wert des Ein- oder Ausgangs. Mit "real" wird der Debug-Wert gelöscht.
 
 function set.io(id, value)
 	if value == "real" then
@@ -114,9 +165,19 @@ function set.io(id, value)
 	com.write(ack)
 end
 
+-------------------------------------------------------------------------------
+-- Sendet der aktuelle IO-Wert.
+-- @param		id ID vom Ein- oder Ausgan
+
 function get.io(id)
 	com.write(ret, kit.IO[id].merge)
 end
+
+-------------------------------------------------------------------------------
+-- Startet oder stoppt die Statemachine auf der SD-Karte in einer geschützter Umgebung.
+-- Ein korruptes File erzeugt somit kein Crash. Die Variable PROGCOMPLETE dient zur
+-- Überprüfung, ob das gesampte File vorhanden ist.
+-- @param		s "run" für starten, "stop" für stoppen
 
 function set.program(s)
 	if s == "run" then
@@ -158,9 +219,18 @@ function set.program(s)
 	end
 end
 
+-------------------------------------------------------------------------------
+-- Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.
+
 function get.program()
 	com.write(ret, mode)
 end
+
+-------------------------------------------------------------------------------
+-- Wird nach jeder Fileübertragung ausgeführt. Falls sie fehlerhaft war, wird 
+-- überprüft, ob die Verbindung noch besteht weil dies während der Fileübertragung
+-- nicht überprüft werden kann.
+-- @param		success true, falls Übertragung erfolgreich
 
 local function filetermination(success)
 	if success then
@@ -178,16 +248,32 @@ local function filetermination(success)
 	end
 end
 
+-------------------------------------------------------------------------------
+-- Empfängt file vom Android-Device
+-- @param		filename Name des Files
+-- @param		filesize Grösse des Files
+
 function set.file(filename, filesize)
 	local success = file.recv(filename, filesize)
 	filetermination(success)
 end
+
+-------------------------------------------------------------------------------
+-- Sendet file an das Android-Device
+-- @param		filename Name des Files
+-- @param		filesize Grösse des Files
 
 function get.file(filename)
 	filesize = mymod.getsize(filename)
 	local success = file.send(filename, filesize)
 	filetermination(success)
 end
+
+-------------------------------------------------------------------------------
+-- Schreibt persistente Werte in die "conf"-Tabelle, welche auch auf der SD-Karte
+-- aktualisiert wird.
+-- @param		key Name des Eintrages
+-- @param		... Werte des Eintrages
 
 function set.store(key, ...)
 	if key == "update" then
@@ -206,24 +292,42 @@ function set.store(key, ...)
 	com.write(ack)
 end
 
+-------------------------------------------------------------------------------
+-- Sendet ein Eintrag der "conf"-Tabelle
+-- @param		key Name des Eintrages
+
 function get.store(key)
 	com.write( ret, key, conf.get(key) )
 end
 
-function set.remote(s , time)
+-------------------------------------------------------------------------------
+-- Startet oder stoppt den Remote-Modus. Ist er aktiv, so werden mittels Interrupt
+-- periodisch die aktiven IO-Werte gesendet.
+-- @param		s "on" um zu starten, "off" um zu beenden
+-- @param		time optional, Periodizität in us, default 1s
+-- @param		noack falls true, wird kein Ack gesendet
+
+function set.remote(s , time, noack)
 	local id = tmr.VIRT8
 	local time = time or 1000000	--min für VIRT-TMR: 250000
 	if s == "on" then
 		tmr.set_match_int( id, time, tmr.INT_CYCLIC );
 		cpu.sei( cpu.INT_TMR_MATCH, id )
+		if not noack then com.write(ack) end
 	elseif s == "off" then
 		kit.reset("merge")
 		kit.reset("custom")
 		tmr.set_match_int( id, 0, tmr.INT_CYCLIC );
 		cpu.cli( cpu.INT_TMR_MATCH, id )
-		com.write(ack)
+		if not noack then com.write(ack) end
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Setzt die Uhrzeit anhand der Adresse des Timeservers, die auf der SD-Karte
+-- gespeichert ist.
+-- @param		arg optional Timestamp für manuelles Stellen der Uhr
+-- @param		nocmd optional, true für initialisierung
 
 function set.time(arg, nocmd)
 	local time = tonumber(arg)
@@ -245,9 +349,19 @@ function set.time(arg, nocmd)
 	com.write(ack)	
 end
 
+-------------------------------------------------------------------------------
+-- Sendet die aktuelle Zeit der Steuereinheit. Erstes Argument Timestamp,
+-- zweites Argument formatierter String mit Wochentag, Uhrzeit und Datum
+
 function get.time()
 	com.write(ret,os.time(),os.date())
 end
+
+-------------------------------------------------------------------------------
+-- Kreiert ein ausfürbarer String, der einem Funktionsaufruf der Protokollsfunktionen
+-- entspricht. So können alle set und get-Funktionen über die UART-Schnittstelle
+-- aufgerufen werden.
+-- @param		data Tabelle mit Parameter für Funktionsaufruf
 
 local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle Argumente werden Strings!!
 	local fstring = data[1] .. "." .. data[2]
@@ -263,6 +377,9 @@ local function createfcall(data)					--Funktionsaufruf "zusammensetzen" --> alle
 	return loadstring("control."..fstring)
 end
 
+-------------------------------------------------------------------------------
+-- Überprüft, ob die Funktion existiert, welche dynamisch aufgerufen werden soll.
+
 local function checkName(name)
 	for k in pairs(set) do
 		if k == name then return true end
@@ -273,6 +390,10 @@ local function checkName(name)
 	return false
 end
 
+-------------------------------------------------------------------------------
+-- Führt die von "createfcall" kreierte Funktion aus.
+-- @param		input String mit Parameter für den Funktionsaufruf
+
 function achieve(input)
 	if #input > 1 then
 		if not checkName(input[2]) then return end						--feher abfangen
@@ -280,6 +401,10 @@ function achieve(input)
 		fcall()
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Funktion der Koroutine. Führt "achieve" aus, um eine Funktionsaufruf zu erzeugen.
+-- Überprüft, ob WPS-Butten gedrückt wurde.
 
 function run()
 	local input = com.read()

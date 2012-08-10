@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -110,19 +106,15 @@
 	<li><strong>..\src\kit.lua</strong></li>
 	
 	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
-	<li>
 		<a href="../files/..\src\list.html">..\src\list.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,47 @@
 <h1>File <code>..\src\kit.lua</code></h1>
 
 
+<p>Initialisiert und abstrahiert die Hardware </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#merge">merge</a>&nbsp;()</td>
+	<td class="summary">Virtualisierung der IOs.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#reset">reset</a>&nbsp;(key)</td>
+	<td class="summary">Setzt die Werte eines bestimmten Feldes der IO's zurück.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#run">run</a>&nbsp;()</td>
+	<td class="summary">Funktion der Koroutine.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#update">update</a>&nbsp;()</td>
+	<td class="summary">Aktualisiert die Werte der Ein- und Ausgänge je nach Typ.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +183,88 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="merge"></a><strong>merge</strong>&nbsp;()</dt>
+<dd>
+Virtualisierung der IOs. Falls das Feld "custom" eines IO's ein Wert hat, so wird der custom-Wert ins Feld "merge" geschrieben. Ansonsten erhält das Feld "merge" der reale Wert.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="reset"></a><strong>reset</strong>&nbsp;(key)</dt>
+<dd>
+Setzt die Werte eines bestimmten Feldes der IO's zurück.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>key</em></code>: Feld des IOs ("real", "custom" oder "merge")
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="run"></a><strong>run</strong>&nbsp;()</dt>
+<dd>
+Funktion der Koroutine. Führt jeweils merge und update aus, um die IOs ständig ein-, beziehungsweise auszulesen.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="update"></a><strong>update</strong>&nbsp;()</dt>
+<dd>
+Aktualisiert die Werte der Ein- und Ausgänge je nach Typ.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 

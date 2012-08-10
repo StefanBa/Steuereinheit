@@ -1,5 +1,15 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Hilfsfunktionen für die Statemachine auf der SD-Karte
+-------------------------------------------------------------------------------
 
 module(..., package.seeall)
+
+require "com"
 
 function year()					-- four digits
 	return os.date("*t").year	
@@ -37,3 +47,6 @@ function isdst()				-- daylight saving flag, a boolean
 	return os.date("*t").isdst
 end
 
+function dbg(s)					-- Gibt debug-Meldung aus
+	com.write("ret", "dbg", s)
+end

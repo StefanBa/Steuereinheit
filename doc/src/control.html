@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -110,19 +106,15 @@
 	</li>
 
 	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
-	<li>
 		<a href="../files/..\src\list.html">..\src\list.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,147 @@
 <h1>File <code>..\src\control.lua</code></h1>
 
 
+<p>Implementation des Protokolls. Erzeugt die Funktionsaufrufe dynamisch. </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#achieve">achieve</a>&nbsp;(input)</td>
+	<td class="summary">Führt die von "createfcall" kreierte Funktion aus.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#checkName">checkName</a>&nbsp;(name)</td>
+	<td class="summary">Überprüft, ob die Funktion existiert, welche dynamisch aufgerufen werden soll.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#createfcall">createfcall</a>&nbsp;(data)</td>
+	<td class="summary">Kreiert ein ausfürbarer String, der einem Funktionsaufruf der Protokollsfunktionen entspricht.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#filetermination">filetermination</a>&nbsp;(success)</td>
+	<td class="summary">Wird nach jeder Fileübertragung ausgeführt.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.ack">get.ack</a>&nbsp;()</td>
+	<td class="summary">Sendet ein "ack" um ein Verbindungstest zu ermöglichen </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.devName">get.devName</a>&nbsp;()</td>
+	<td class="summary">Sendet aktueller deviceName des WLAN-Moduls.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.file">get.file</a>&nbsp;(filename, filesize)</td>
+	<td class="summary">Sendet file an das Android-Device </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.io">get.io</a>&nbsp;(id)</td>
+	<td class="summary">Sendet der aktuelle IO-Wert.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.program">get.program</a>&nbsp;()</td>
+	<td class="summary">Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.store">get.store</a>&nbsp;(key)</td>
+	<td class="summary">Sendet ein Eintrag der "conf"-Tabelle </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get.time">get.time</a>&nbsp;()</td>
+	<td class="summary">Sendet die aktuelle Zeit der Steuereinheit.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#init">init</a>&nbsp;()</td>
+	<td class="summary">Initialisiert und konfiguriert das WLAN-Modul mittels der Persistenten Werten der SD-Karte.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#run">run</a>&nbsp;()</td>
+	<td class="summary">Funktion der Koroutine.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.boardid">set.boardid</a>&nbsp;(nocmd)</td>
+	<td class="summary">Holt die MAC-Adresse des WLAN-Moduls und Speichert diesen auf der SD-Karte.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.devName">set.devName</a>&nbsp;(deviceId, nocmd)</td>
+	<td class="summary">Verändert den deviceName der Steuereinheit.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.file">set.file</a>&nbsp;(filename, filesize)</td>
+	<td class="summary">Empfängt file vom Android-Device </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.io">set.io</a>&nbsp;(id, value)</td>
+	<td class="summary">Setzt IO-Werte.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.program">set.program</a>&nbsp;(s)</td>
+	<td class="summary">Startet oder stoppt die Statemachine auf der SD-Karte in einer geschützter Umgebung.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.remote">set.remote</a>&nbsp;(s, time, noack)</td>
+	<td class="summary">Startet oder stoppt den Remote-Modus.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.store">set.store</a>&nbsp;(key, ...)</td>
+	<td class="summary">Schreibt persistente Werte in die "conf"-Tabelle, welche auch auf der SD-Karte aktualisiert wird.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.time">set.time</a>&nbsp;(arg, nocmd)</td>
+	<td class="summary">Setzt die Uhrzeit anhand der Adresse des Timeservers, die auf der SD-Karte gespeichert ist.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.wlan">set.wlan</a>&nbsp;(ssid, pw, nocmd)</td>
+	<td class="summary">Konfiguriert die wlan-Parameter des WLAN-Moduls anhand der SD-Karte </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set.wps">set.wps</a>&nbsp;()</td>
+	<td class="summary">Führt die WPS-App des WLAN-Moduls aus.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#tmr_handler">tmr_handler</a>&nbsp;()</td>
+	<td class="summary">Timer Handler Function.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +283,603 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="achieve"></a><strong>achieve</strong>&nbsp;(input)</dt>
+<dd>
+Führt die von "createfcall" kreierte Funktion aus.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>input</em></code>: String mit Parameter für den Funktionsaufruf
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="checkName"></a><strong>checkName</strong>&nbsp;(name)</dt>
+<dd>
+Überprüft, ob die Funktion existiert, welche dynamisch aufgerufen werden soll.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>name</em></code>: 
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="createfcall"></a><strong>createfcall</strong>&nbsp;(data)</dt>
+<dd>
+Kreiert ein ausfürbarer String, der einem Funktionsaufruf der Protokollsfunktionen entspricht. So können alle set und get-Funktionen über die UART-Schnittstelle aufgerufen werden.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>data</em></code>: Tabelle mit Parameter für Funktionsaufruf
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="filetermination"></a><strong>filetermination</strong>&nbsp;(success)</dt>
+<dd>
+Wird nach jeder Fileübertragung ausgeführt. Falls sie fehlerhaft war, wird überprüft, ob die Verbindung noch besteht weil dies während der Fileübertragung nicht überprüft werden kann.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>success</em></code>: true, falls Übertragung erfolgreich
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.ack"></a><strong>get.ack</strong>&nbsp;()</dt>
+<dd>
+Sendet ein "ack" um ein Verbindungstest zu ermöglichen
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.devName"></a><strong>get.devName</strong>&nbsp;()</dt>
+<dd>
+Sendet aktueller deviceName des WLAN-Moduls.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.file"></a><strong>get.file</strong>&nbsp;(filename, filesize)</dt>
+<dd>
+Sendet file an das Android-Device
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>filename</em></code>: Name des Files
+	</li>
+	
+	<li>
+	  <code><em>filesize</em></code>: Grösse des Files
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.io"></a><strong>get.io</strong>&nbsp;(id)</dt>
+<dd>
+Sendet der aktuelle IO-Wert.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>id</em></code>: ID vom Ein- oder Ausgan
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.program"></a><strong>get.program</strong>&nbsp;()</dt>
+<dd>
+Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.store"></a><strong>get.store</strong>&nbsp;(key)</dt>
+<dd>
+Sendet ein Eintrag der "conf"-Tabelle
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>key</em></code>: Name des Eintrages
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get.time"></a><strong>get.time</strong>&nbsp;()</dt>
+<dd>
+Sendet die aktuelle Zeit der Steuereinheit. Erstes Argument Timestamp, zweites Argument formatierter String mit Wochentag, Uhrzeit und Datum
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="init"></a><strong>init</strong>&nbsp;()</dt>
+<dd>
+Initialisiert und konfiguriert das WLAN-Modul mittels der Persistenten Werten der SD-Karte. So ist das WLAN-Modul nach jedem Reset anhand der SD-Karte konfiguriert.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="run"></a><strong>run</strong>&nbsp;()</dt>
+<dd>
+Funktion der Koroutine. Führt "achieve" aus, um eine Funktionsaufruf zu erzeugen. Überprüft, ob WPS-Butten gedrückt wurde.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.boardid"></a><strong>set.boardid</strong>&nbsp;(nocmd)</dt>
+<dd>
+Holt die MAC-Adresse des WLAN-Moduls und Speichert diesen auf der SD-Karte.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, true für initialisierung
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.devName"></a><strong>set.devName</strong>&nbsp;(deviceId, nocmd)</dt>
+<dd>
+Verändert den deviceName der Steuereinheit. Dem Namen wird an hinterster Stelle die MAC-Adresse des WLAN-Moduls angehängt um die Steuereinheit eindeutig identifizieren zu können. Der deviceName wird zusätzlich auf der SD-Karte gespeichert.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>deviceId</em></code>: zu aktualisiernder deviceName
+	</li>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, true für initialisierung
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.file"></a><strong>set.file</strong>&nbsp;(filename, filesize)</dt>
+<dd>
+Empfängt file vom Android-Device
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>filename</em></code>: Name des Files
+	</li>
+	
+	<li>
+	  <code><em>filesize</em></code>: Grösse des Files
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.io"></a><strong>set.io</strong>&nbsp;(id, value)</dt>
+<dd>
+Setzt IO-Werte. Ist das Program "run", so werden die "custom"-Werte aktualisiert, so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "stop", werden die "real"-Werte aktualisiert, welche normalerweise verwendet werden.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>id</em></code>: ID vom Ein- oder Ausgang
+	</li>
+	
+	<li>
+	  <code><em>value</em></code>: Wert des Ein- oder Ausgangs. Mit "real" wird der Debug-Wert gelöscht.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.program"></a><strong>set.program</strong>&nbsp;(s)</dt>
+<dd>
+Startet oder stoppt die Statemachine auf der SD-Karte in einer geschützter Umgebung. Ein korruptes File erzeugt somit kein Crash. Die Variable PROGCOMPLETE dient zur Überprüfung, ob das gesampte File vorhanden ist.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>s</em></code>: "run" für starten, "stop" für stoppen
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.remote"></a><strong>set.remote</strong>&nbsp;(s, time, noack)</dt>
+<dd>
+Startet oder stoppt den Remote-Modus. Ist er aktiv, so werden mittels Interrupt periodisch die aktiven IO-Werte gesendet.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>s</em></code>: "on" um zu starten, "off" um zu beenden
+	</li>
+	
+	<li>
+	  <code><em>time</em></code>: optional, Periodizität in us, default 1s
+	</li>
+	
+	<li>
+	  <code><em>noack</em></code>: falls true, wird kein Ack gesendet
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.store"></a><strong>set.store</strong>&nbsp;(key, ...)</dt>
+<dd>
+Schreibt persistente Werte in die "conf"-Tabelle, welche auch auf der SD-Karte aktualisiert wird.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>key</em></code>: Name des Eintrages
+	</li>
+	
+	<li>
+	  <code><em>...</em></code>: Werte des Eintrages
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.time"></a><strong>set.time</strong>&nbsp;(arg, nocmd)</dt>
+<dd>
+Setzt die Uhrzeit anhand der Adresse des Timeservers, die auf der SD-Karte gespeichert ist.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>arg</em></code>: optional Timestamp für manuelles Stellen der Uhr
+	</li>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, true für initialisierung
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.wlan"></a><strong>set.wlan</strong>&nbsp;(ssid, pw, nocmd)</dt>
+<dd>
+Konfiguriert die wlan-Parameter des WLAN-Moduls anhand der SD-Karte
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>ssid</em></code>: optional, SSID vom Netzwerk (manuell nicht von SD-Karte)
+	</li>
+	
+	<li>
+	  <code><em>pw</em></code>: optional, zugehöriges Passwort (manuell nicht von SD-Karte)
+	</li>
+	
+	<li>
+	  <code><em>nocmd</em></code>: optional, true für initialisierung
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set.wps"></a><strong>set.wps</strong>&nbsp;()</dt>
+<dd>
+Führt die WPS-App des WLAN-Moduls aus. Die wlan-Konfigurationen werden auf der SD-Karte gespeichert.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="tmr_handler"></a><strong>tmr_handler</strong>&nbsp;()</dt>
+<dd>
+Timer Handler Function. Ist das Android-Device im Remote-Modus, so wird diese Funktion periodisch aufgerufen, und sendet die aktuellen IO-Werte.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 

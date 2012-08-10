@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -110,19 +106,15 @@
 	</li>
 
 	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
-	<li>
 		<a href="../files/..\src\list.html">..\src\list.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,52 @@
 <h1>File <code>..\src\file.lua</code></h1>
 
 
+<p>Managet das Senden und Empfangen von Files </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#checksum">checksum</a>&nbsp;(s)</td>
+	<td class="summary">Erzeugt die Checksumme eines Strings und gibt diese zurück </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#readFromFile">readFromFile</a>&nbsp;(file)</td>
+	<td class="summary">Liest Daten der grösse BLOCKSIZE aus file und sendet diese auf der UART-Schnittstelle.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#recv">recv</a>&nbsp;(filename, filesize)</td>
+	<td class="summary">Wird aufgerufen um ein file zu empfangen.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#send">send</a>&nbsp;(filename, filesize)</td>
+	<td class="summary">Wird aufgerufen um ein file zu senden.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#writeToFile">writeToFile</a>&nbsp;(file, difflen)</td>
+	<td class="summary">Wartet auf UART-Daten der Grösse BLOCKSIZE und schreibt diese in das file.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +188,162 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="checksum"></a><strong>checksum</strong>&nbsp;(s)</dt>
+<dd>
+Erzeugt die Checksumme eines Strings und gibt diese zurück
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>s</em></code>: String zur erzeugung der Checksumme
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>Checksumme</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="readFromFile"></a><strong>readFromFile</strong>&nbsp;(file)</dt>
+<dd>
+Liest Daten der grösse BLOCKSIZE aus file und sendet diese auf der UART-Schnittstelle. Vorgängig wird die Checksumme berechnet und als letztes Byte angehängt.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>file</em></code>: file, von dem gelesen wird
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="recv"></a><strong>recv</strong>&nbsp;(filename, filesize)</dt>
+<dd>
+Wird aufgerufen um ein file zu empfangen. Erstellt oder Öffnet (-> Überschreibt) das file, berechnet Anzahl Pakete und führt entsprechend "writeToFile" aus.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>filename</em></code>: Name des files
+	</li>
+	
+	<li>
+	  <code><em>filesize</em></code>: Grösse des files
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>boolean true, falls Übertragung erfolgreich</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="send"></a><strong>send</strong>&nbsp;(filename, filesize)</dt>
+<dd>
+Wird aufgerufen um ein file zu senden. Versucht das file zu öffnen, berechnet die Anzhal Pakete und ruft entsprechend "readFromFile" aus.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>filename</em></code>: Name des files
+	</li>
+	
+	<li>
+	  <code><em>filesize</em></code>: Grösse des files
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>boolean true, falls Übertragung erfolgreich</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="writeToFile"></a><strong>writeToFile</strong>&nbsp;(file, difflen)</dt>
+<dd>
+Wartet auf UART-Daten der Grösse BLOCKSIZE und schreibt diese in das file. Überprüft zuerst ob die Checksumme der Datenbytes (alle ausser das letzte) dem Checksummenbyte (letztes Byte) entspricht.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>file</em></code>: file, in das geschrieben wird
+	</li>
+	
+	<li>
+	  <code><em>difflen</em></code>: optional, für letzter Block, falls dieser mit Nullen aufgefüllt wurde
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 

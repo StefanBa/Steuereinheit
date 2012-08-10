@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Main, kontrolliert die Threads, startet automatisch beim Reset
+-------------------------------------------------------------------------------
 
 local showio = false
 printold = print
@@ -15,6 +23,10 @@ require "com"
 require "cmd"
 
 term.clrscr()
+print([[        ___  ___  ___  _ _  ___      ]])
+print([[       / __>| _ || _ \| | || _ |     ]])
+print([[       \__ \|   ||   /|   ||   |     ]])
+print([[       <___/|_|_||_\_\|_|_||_|_|     ]])
 print("\n\r Android-basiertes Home Automation System \n\r")
 
 threads = {}
@@ -55,7 +67,6 @@ table.insert(threads, coroutine.create(function ()
 end))
 
 local ram, rammax = 0, 0
-local tstart = tmr.start(3)	--für ramcollectblabla
 
 while true do
 	local state, msg

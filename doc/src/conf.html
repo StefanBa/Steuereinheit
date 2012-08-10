@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -110,19 +106,15 @@
 	</li>
 
 	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
-	<li>
 		<a href="../files/..\src\list.html">..\src\list.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,57 @@
 <h1>File <code>..\src\conf.lua</code></h1>
 
 
+<p>Ermöglicht das Abspeichern persistenter Werte auf der SD-Karte. </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#default">default</a>&nbsp;()</td>
+	<td class="summary">Füllt die globale Tabelle "const" mit default-Werten.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#execute">execute</a>&nbsp;()</td>
+	<td class="summary">Speichert die globale Tabelle "const" mittels der Funktion "serialize" auf die SD-Karte </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#get">get</a>&nbsp;(id, format)</td>
+	<td class="summary">Gibt ein Eintrag der "const" Tabelle zurück.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#init">init</a>&nbsp;()</td>
+	<td class="summary">Initialisiert die persistenten Werte entweder von der SD-Karte.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#serialize">serialize</a>&nbsp;(o, arg)</td>
+	<td class="summary">Serialisiert eine Zahl, ein String oder eine Tabelle und Speichert das Resultat in das momentan geöffnete file --> boardconf.lua.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#set">set</a>&nbsp;(id, value)</td>
+	<td class="summary">Erzeugt oder verändert ein Eintrag in der "const" Tabelle und aktualisiert File auf der SD-Karte.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +193,155 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="default"></a><strong>default</strong>&nbsp;()</dt>
+<dd>
+Füllt die globale Tabelle "const" mit default-Werten.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="execute"></a><strong>execute</strong>&nbsp;()</dt>
+<dd>
+Speichert die globale Tabelle "const" mittels der Funktion "serialize" auf die SD-Karte
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="get"></a><strong>get</strong>&nbsp;(id, format)</dt>
+<dd>
+Gibt ein Eintrag der "const" Tabelle zurück. Ist der Eintrag eine Tabelle, so werden default mehrere Rückgabewerte erzeugt. Es kann auch die Tabelle selbst verlangt werden.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>id</em></code>: Name des Eintrages
+	</li>
+	
+	<li>
+	  <code><em>format</em></code>: Tabelle als Rückgabewert wenn "*t"
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>Gespeicherte Werte vom entsprechenden Eintrag.</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="init"></a><strong>init</strong>&nbsp;()</dt>
+<dd>
+Initialisiert die persistenten Werte entweder von der SD-Karte. Sind diese nicht verfügbar, werden die default-Werte verwendet.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="serialize"></a><strong>serialize</strong>&nbsp;(o, arg)</dt>
+<dd>
+Serialisiert eine Zahl, ein String oder eine Tabelle und Speichert das Resultat in das momentan geöffnete file --> boardconf.lua. Kann auch mit verschachtelten Tabellen umgehen, wird dann rekursiv verwendet.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>o</em></code>: zu serialisierendes Objekt
+	</li>
+	
+	<li>
+	  <code><em>arg</em></code>: optional, zusätzliches Argument um Formatierung zu ermöglichen
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="set"></a><strong>set</strong>&nbsp;(id, value)</dt>
+<dd>
+Erzeugt oder verändert ein Eintrag in der "const" Tabelle und aktualisiert File auf der SD-Karte.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>id</em></code>: Name des Wertes
+	</li>
+	
+	<li>
+	  <code><em>value</em></code>: zu speichernder Wert
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 

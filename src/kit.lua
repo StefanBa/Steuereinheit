@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Initialisiert und abstrahiert die Hardware
+-------------------------------------------------------------------------------
 
 module(..., package.seeall)
 
@@ -17,6 +25,7 @@ local tsample
 
 local pwm_f = 50000
 
+--Wird verwendet um zu Überprüfen, ob WPS-Button betätigt wurde
 btn_pressed = function( button )
   return pio.pin.getval( button ) == 0
 end
@@ -33,6 +42,7 @@ button_clicked = function( button )
   return false
 end
 
+--Mapping der IOs
 IO = {
 		DO0 = {adress = pio.PB_4},
 		DO1 = {adress = pio.PB_5},
@@ -63,16 +73,18 @@ IO = {
 		AO3 = {adress = 1}
 	}
 
+--Alphabetische Sortierung der Namen der IOs
 SORT = {}
 for n in pairs(IO) do SORT[#SORT + 1] = n end
 table.sort(SORT)
 
+--Defaultwerte der IOs
 mt = { __index = {real = 0, custom, merge = 0} }
-
 for i, v in pairs(IO) do
 	setmetatable(IO[i], mt)
 end
 
+--Initialisierung der IOs
 for i in pairs(IO) do
 	if i:find("DI") then
 		pio.pin.setdir( pio.INPUT, IO[i].adress )
@@ -82,17 +94,19 @@ for i in pairs(IO) do
 		pio.pin.setdir( pio.OUTPUT, IO[i].adress )
 	
 	elseif i:find("AI") then
-		adc.setblocking( IO[i].adress,0) -- no blocking on any channels
+		adc.setblocking( IO[i].adress,0) 				-- no blocking on any channels
  		adc.setsmoothing( IO[i].adress, adc_smoothing ) -- set smoothing from adcsmoothing table
-  		adc.setclock( IO[i].adress, adc_f, adc_timer ) -- get 4 samples per second, per channel	
+  		adc.setclock( IO[i].adress, adc_f, adc_timer ) 	-- get 4 samples per second, per channel	
 	else
 		pwm.setup( IO[i].adress, pwm_f, IO[i].real )
 		pwm.start( IO[i].adress )
 	end
 	
 end
-
 adc.sample({0,1,2,3},128)
+
+-------------------------------------------------------------------------------
+-- Aktualisiert die Werte der Ein- und Ausgänge je nach Typ.
 
 function update()
 	for _,i in pairs(conf.get("update", "*t")) do
@@ -107,14 +121,17 @@ function update()
 			tsample = adc.getsample(IO[i].adress) --nächstes sample vom buffer holen
 			if not (tsample == nil) then 
     			IO[i].real = tsample
-    		end
-    			
+    		end   			
 		else
-			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )
-				
+			pwm.setup( IO[i].adress, pwm_f, IO[i].merge )	
 		end	
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Virtualisierung der IOs. Falls das Feld "custom" eines IO's ein Wert hat,
+-- so wird der custom-Wert ins Feld "merge" geschrieben. Ansonsten erhält das
+-- Feld "merge" der reale Wert.
 
 local function merge()
 	for _,i in pairs(conf.get("update", "*t")) do
@@ -126,6 +143,10 @@ local function merge()
 	end
 end
 
+-------------------------------------------------------------------------------
+-- Setzt die Werte eines bestimmten Feldes der IO's zurück. 
+-- @param		key Feld des IOs ("real", "custom" oder "merge")
+
 function reset(key)			--beim Program aus / ändern von _G.const.update
 	local value = 0
 	if key == "custom" then value = nil end
@@ -133,6 +154,10 @@ function reset(key)			--beim Program aus / ändern von _G.const.update
 		IO[i][key] = value
 	end
 end
+
+-------------------------------------------------------------------------------
+-- Funktion der Koroutine. Führt jeweils merge und update aus, um die IOs
+-- ständig ein-, beziehungsweise auszulesen.
 
 function run()
 	merge()

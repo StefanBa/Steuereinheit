@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -110,19 +106,15 @@
 	</li>
 
 	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
-	<li>
 		<a href="../files/..\src\list.html">..\src\list.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,62 @@
 <h1>File <code>..\src\com.lua</code></h1>
 
 
+<p>Kontrolliert die Kommunikation mit App und Wlan-Modul </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#checkconnect">checkconnect</a>&nbsp;(input)</td>
+	<td class="summary">Überprüft aktueller String, um festzustellen, ob das Wlan-Modul connected oder disconnected wurde.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#init">init</a>&nbsp;()</td>
+	<td class="summary">Initialisierung der UART-Schnittstelle </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#read">read</a>&nbsp;()</td>
+	<td class="summary">Liest recvList aus und gibt letzten Eintrag zurück.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#recv">recv</a>&nbsp;()</td>
+	<td class="summary">Empfängt auf der UART-Schnittstelle und macht Einträge auf der recvList.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#run">run</a>&nbsp;()</td>
+	<td class="summary">Funktion der Koroutine.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#send">send</a>&nbsp;()</td>
+	<td class="summary">Sendet letzer Eintrag der sendList auf der UART-Schnittstelle.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#write">write</a>&nbsp;(s, ...)</td>
+	<td class="summary">Schreibt ein String auf die sendList.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +198,161 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="checkconnect"></a><strong>checkconnect</strong>&nbsp;(input)</dt>
+<dd>
+Überprüft aktueller String, um festzustellen, ob das Wlan-Modul connected oder disconnected wurde.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>input</em></code>: zu überprüfender String
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="init"></a><strong>init</strong>&nbsp;()</dt>
+<dd>
+Initialisierung der UART-Schnittstelle
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="read"></a><strong>read</strong>&nbsp;()</dt>
+<dd>
+Liest recvList aus und gibt letzten Eintrag zurück. Bei status "cmd" wird der Eintrag nicht weiter verarbeitet. Bei status "normal" wird bei SEP ";" aufgetrennt und die Parameter als Tabelle zurückgegeben.
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li>recv recvList-Eintrag (status "cmd")</li>
+	
+	<li>splitter Tabelle mit Parameter (status "normal")</li>
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="recv"></a><strong>recv</strong>&nbsp;()</dt>
+<dd>
+Empfängt auf der UART-Schnittstelle und macht Einträge auf der recvList. Ein zu empfangender String muss innerhalb von 200ms mit \r abgeschlossen sein. Falls staus "normal", so muss das WLAN-Modul connected sein.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="run"></a><strong>run</strong>&nbsp;()</dt>
+<dd>
+Funktion der Koroutine. Führt recv() und send() aus um die Kommunikation zu ermöglichen
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="send"></a><strong>send</strong>&nbsp;()</dt>
+<dd>
+Sendet letzer Eintrag der sendList auf der UART-Schnittstelle.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="write"></a><strong>write</strong>&nbsp;(s, ...)</dt>
+<dd>
+Schreibt ein String auf die sendList. Mehrere Argumente werden mit Seperator SEP ";" aneinandergereiht. Ist der status "cmd" so wird nur \r als Endzeichen verwendet. Bei status "normal" gelten die Endzeichen \r\n
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>s</em></code>: String, der gepuffert wird.
+	</li>
+	
+	<li>
+	  <code><em>...</em></code>: 
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 

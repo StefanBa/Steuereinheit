@@ -1,3 +1,11 @@
+-------------------------------------------------------------------------------
+-- FHNW			Studiengang EIT
+-- Projekt6		Android-basiertes Home Automation System
+-- Web			http://web.fhnw.ch/technik/projekte/eit/Fruehling2012/BaumKell/
+-- @author		Stefan Baumann, stefan.baumann1@students.fhnw.ch
+-- @release		Datum: 17.08.2012
+-- @description	Managet das Senden und Empfangen von Files
+-------------------------------------------------------------------------------
 
 module(..., package.seeall)
 
@@ -8,7 +16,12 @@ local TIMEOUT = 2000000
 local TIMERID = nil			--Systemtimer
 local ack = "ack\r\n"
 local nak = "nak\r\n"
-local TRIES = 2
+local TRIES = 2				--Anzahl Versuche 
+
+-------------------------------------------------------------------------------
+-- Erzeugt die Checksumme eines Strings und gibt diese zurück
+-- @param		s String zur erzeugung der Checksumme
+-- @return	 	Checksumme
 
 local function checksum(s)
 	local sum = 0
@@ -18,6 +31,13 @@ local function checksum(s)
 	end
 	return bit.band( sum,255 )
 end
+
+-------------------------------------------------------------------------------
+-- Wartet auf UART-Daten der Grösse BLOCKSIZE und schreibt diese in das file.
+-- Überprüft zuerst ob die Checksumme der Datenbytes (alle ausser das letzte) dem
+-- Checksummenbyte (letztes Byte) entspricht.
+-- @param		file file, in das geschrieben wird
+-- @param	 	difflen optional, für letzter Block, falls dieser mit Nullen aufgefüllt wurde
 
 local function writeToFile(file, difflen)	
 	local count = 0
@@ -39,11 +59,15 @@ local function writeToFile(file, difflen)
 			return true
 		else
 			uart.write(com.uart_id, nak)
-			return false
 		end
 	end
 	return false
 end
+
+-------------------------------------------------------------------------------
+-- Liest Daten der grösse BLOCKSIZE aus file und sendet diese auf der UART-Schnittstelle.
+-- Vorgängig wird die Checksumme berechnet und als letztes Byte angehängt.
+-- @param		file file, von dem gelesen wird
 
 local function readFromFile(file)
 	local count = 0
@@ -72,6 +96,13 @@ local function readFromFile(file)
 	
 	return false
 end
+
+-------------------------------------------------------------------------------
+-- Wird aufgerufen um ein file zu empfangen. Erstellt oder Öffnet (-> Überschreibt)
+-- das file, berechnet Anzahl Pakete und führt entsprechend "writeToFile" aus.
+-- @param		filename Name des files
+-- @param	 	filesize Grösse des files
+-- @return		boolean true, falls Übertragung erfolgreich
 
 function recv(filename, filesize)
 	local file = io.open( "/mmc/"..filename, "w" )
@@ -107,6 +138,13 @@ function recv(filename, filesize)
 	file:close()
 	return true
 end
+
+-------------------------------------------------------------------------------
+-- Wird aufgerufen um ein file zu senden. Versucht das file zu öffnen, berechnet
+-- die Anzhal Pakete und ruft entsprechend "readFromFile" aus.
+-- @param		filename Name des files
+-- @param	 	filesize Grösse des files
+-- @return		boolean true, falls Übertragung erfolgreich
 
 function send(filename, filesize)	
 	if filesize then

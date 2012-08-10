@@ -63,11 +63,11 @@
 	</li>
 
 	<li>
-		<a href="../modules/..\src\prog.html">..\src\prog</a>
+		<a href="../modules/..\src\progtest.html">..\src\progtest</a>
 	</li>
 
 	<li>
-		<a href="../modules/..\src\program.html">..\src\program</a>
+		<a href="../modules/..\src\t.html">..\src\t</a>
 	</li>
 
 </ul>
@@ -81,10 +81,6 @@
 
 	<li>
 		<a href="../files/..\src\autorun.html">..\src\autorun.lua</a>
-	</li>
-
-	<li>
-		<a href="../files/..\src\clean.html">..\src\clean.lua</a>
 	</li>
 
 	<li>
@@ -111,18 +107,14 @@
 		<a href="../files/..\src\kit.html">..\src\kit.lua</a>
 	</li>
 
-	<li>
-		<a href="../files/..\src\large.html">..\src\large.lua</a>
-	</li>
-
 	<li><strong>..\src\list.lua</strong></li>
 	
 	<li>
-		<a href="../files/..\src\prog.html">..\src\prog.lua</a>
+		<a href="../files/..\src\progtest.html">..\src\progtest.lua</a>
 	</li>
 
 	<li>
-		<a href="../files/..\src\program.html">..\src\program.lua</a>
+		<a href="../files/..\src\t.html">..\src\t.lua</a>
 	</li>
 
 </ul>
@@ -139,10 +131,42 @@
 <h1>File <code>..\src\list.lua</code></h1>
 
 
+<p>Eine Liste, die mit push und pop gefüllt/geleert werden kann. Ist eine Klasse und kann mehrfach instanziert werden. Das Funktionsprinzip wurde vom Buch "Programmieren mit LUA" übernommen. </p>
+
+
+<p><b>Author:</b>
+<table class="authors_list">
+
+	<tr><td class="name">Stefan Baumann, stefan.baumann1@students.fhnw.ch</td></tr>
+
+</table>
+</p>
 
 
 
+<p><small><b>Release:</b> Datum: 17.08.2012</small></p>
 
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#List:new">List:new</a>&nbsp;(l)</td>
+	<td class="summary">Generiert neue Liste.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#List:poplast">List:poplast</a>&nbsp;(value)</td>
+	<td class="summary">Gibt letztes Element zurück.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#List:pushfirst">List:pushfirst</a>&nbsp;(value)</td>
+	<td class="summary">Fügt neues Element hinzu.</td>
+	</tr>
+
+</table>
 
 
 
@@ -154,6 +178,92 @@
 
 
 
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="List:new"></a><strong>List:new</strong>&nbsp;(l)</dt>
+<dd>
+Generiert neue Liste.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>l</em></code>: ist optional, falls eine bestehende Liste verwendet werden möchte
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<ul>l die Liste, welch nun mit push/pop verwendet werden kann</ul>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="List:poplast"></a><strong>List:poplast</strong>&nbsp;(value)</dt>
+<dd>
+Gibt letztes Element zurück.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>value</em></code>: ist das neue Element
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="List:pushfirst"></a><strong>List:pushfirst</strong>&nbsp;(value)</dt>
+<dd>
+Fügt neues Element hinzu.
+
+
+<h3>Parameters:</h3>
+<ul>
+	
+	<li>
+	  <code><em>value</em></code>: ist das neue Element
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
 
 
 
