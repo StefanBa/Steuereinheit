@@ -193,7 +193,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#get.program">get.program</a>&nbsp;()</td>
-	<td class="summary">Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.</td>
+	<td class="summary">Sendet der aktuelle zustand "on" oder "off" der Statemachine auf der SD-Karte.</td>
 	</tr>
 
 	<tr>
@@ -485,7 +485,7 @@ Sendet der aktuelle IO-Wert.
 
 <dt><a name="get.program"></a><strong>get.program</strong>&nbsp;()</dt>
 <dd>
-Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.
+Sendet der aktuelle zustand "on" oder "off" der Statemachine auf der SD-Karte.
 
 
 
@@ -665,7 +665,7 @@ Empfängt file vom Android-Device
 
 <dt><a name="set.io"></a><strong>set.io</strong>&nbsp;(id, value)</dt>
 <dd>
-Setzt IO-Werte. Ist das Program "run", so werden die "custom"-Werte aktualisiert, so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "stop", werden die "real"-Werte aktualisiert, welche normalerweise verwendet werden.
+Setzt IO-Werte. Ist das Program "on", so werden die "custom"-Werte aktualisiert, so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "off", werden die "real"-Werte aktualisiert, welche normalerweise verwendet werden.
 
 
 <h3>Parameters:</h3>
@@ -702,7 +702,7 @@ Startet oder stoppt die Statemachine auf der SD-Karte in einer geschützter Umgeb
 <ul>
 	
 	<li>
-	  <code><em>s</em></code>: "run" für starten, "stop" für stoppen
+	  <code><em>s</em></code>: "on" für starten, "off" für stoppen
 	</li>
 	
 </ul>

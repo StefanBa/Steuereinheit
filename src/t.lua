@@ -9,6 +9,8 @@
 
 module(..., package.seeall)
 
+debug = false
+
 require "com"
 
 function year()					-- four digits
@@ -48,5 +50,7 @@ function isdst()				-- daylight saving flag, a boolean
 end
 
 function dbg(s)					-- Gibt debug-Meldung aus
-	com.write("ret", "dbg", s)
+	if debug then
+		com.write("ret", "dbg", s)
+	end
 end

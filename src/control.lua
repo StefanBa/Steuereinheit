@@ -13,11 +13,12 @@ require "kit"
 require "cmd"
 require "file"
 require "conf"
+require "t"
 
 set = {}												--müssen global sein, wegen loadstring
 get = {}
 
-local mode = "stop"					--kann stop, run (oder debug??) sein
+local mode = "off"
 local ack = "ack"
 local ret = "ret"
 local nak = "nak"
@@ -53,7 +54,7 @@ end
 -- Sendet ein "ack" um ein Verbindungstest zu ermöglichen
 
 function get.ack()
-	com.write(ret, ack)
+	com.write(ack)
 end
 
 -------------------------------------------------------------------------------
@@ -131,7 +132,7 @@ function set.wps()
 	cmd.on()
 	local success = cmd.wps()
 	if success then
-		cmd.findText(3000000) 			--Zeit bis WLAN-Modul reboot, connect
+		cmd.findText("",3000000) 			--Zeit bis WLAN-Modul reboot, connect
 		cmd.on()
 		local ssid = cmd.get("get w", "SSID")
 		local pw = cmd.get("get w", "Passphrase")
@@ -141,8 +142,8 @@ function set.wps()
 end
 
 -------------------------------------------------------------------------------
--- Setzt IO-Werte. Ist das Program "run", so werden die "custom"-Werte aktualisiert,
--- so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "stop",
+-- Setzt IO-Werte. Ist das Program "on", so werden die "custom"-Werte aktualisiert,
+-- so wird das debuggen vom Android-Device aus ermöglicht. Ist das Program "off",
 -- werden die "real"-Werte aktualisiert, welche normalerweise verwendet werden.
 -- @param		id ID vom Ein- oder Ausgang
 -- @param		value Wert des Ein- oder Ausgangs. Mit "real" wird der Debug-Wert gelöscht.
@@ -154,7 +155,7 @@ function set.io(id, value)
 		return
 	end
 	value = tonumber(value)
-	if mode == "run" then
+	if mode == "on" then
 		kit.IO[id].custom = value
 		print("custom", kit.IO[id].custom)
 	else 
@@ -177,22 +178,22 @@ end
 -- Startet oder stoppt die Statemachine auf der SD-Karte in einer geschützter Umgebung.
 -- Ein korruptes File erzeugt somit kein Crash. Die Variable PROGCOMPLETE dient zur
 -- Überprüfung, ob das gesampte File vorhanden ist.
--- @param		s "run" für starten, "stop" für stoppen
+-- @param		s "on" für starten, "off" für stoppen
 
 function set.program(s)
-	if s == "run" then
+	if s == "on" then
 		local state = pcall( function ()		--programm in geschützter Umgebung starten
-			require"progBenj"
+			require"statemachine"
 		end )
 		print("state:   ", state)
 		
 		local success = false
 		if state then
-			if progBenj.PROGCOMPLETE then
+			if statemachine.PROGCOMPLETE then
 				success = true
 				print("program running")
 				_G.threadend = #threads
-				mode = "run"
+				mode = "on"
 				com.write(ack)
 			end
 		end
@@ -201,16 +202,15 @@ function set.program(s)
 			com.write(nak)
 		end
 		
-	elseif s == "stop" then
-		mode = "stop"
+	elseif s == "off" then
+		mode = "off"
 		_G.threadend = 4
 		--coroutine.yield()
 		--for i = 5, #threads do
 		--	threads[i] = nil
 		--end
-		package.loaded["progBenj"] = nil		--unload prog
-		_G["progBenj"] = nil
-		kit.reset("merge")
+		package.loaded["statemachine"] = nil		--unload prog
+		_G["statemachine"] = nil
 		kit.reset("custom")
 		print("program stoped")
 		com.write(ack)
@@ -220,10 +220,10 @@ function set.program(s)
 end
 
 -------------------------------------------------------------------------------
--- Sendet der aktuelle zustand "run" oder "stop" der Statemachine auf der SD-Karte.
+-- Sendet der aktuelle zustand "on" oder "off" der Statemachine auf der SD-Karte.
 
 function get.program()
-	com.write(ret, mode)
+	com.write(ret, "program", mode)
 end
 
 -------------------------------------------------------------------------------
@@ -249,11 +249,12 @@ local function filetermination(success)
 end
 
 -------------------------------------------------------------------------------
--- Empfängt file vom Android-Device
+-- Empfängt file vom Android-Device und stoppt das Programm
 -- @param		filename Name des Files
 -- @param		filesize Grösse des Files
 
 function set.file(filename, filesize)
+	set.program("off")		--Programm anhalten bei Config- oder Statemachine empfang
 	local success = file.recv(filename, filesize)
 	filetermination(success)
 end
@@ -276,21 +277,15 @@ end
 -- @param		... Werte des Eintrages
 
 function set.store(key, ...)
+	conf.set(key, {...})
 	if key == "update" then
 		kit.reset("real")
 		kit.reset("custom")
 		kit.reset("merge")
-		kit.update()
-		local a = ...
-		if a == "all" then
-			conf.set(key, kit.SORT)
-			com.write(ack)
-			return
-		end
-	end
-	conf.set(key, {...})
+	end	
 	com.write(ack)
 end
+
 
 -------------------------------------------------------------------------------
 -- Sendet ein Eintrag der "conf"-Tabelle
@@ -309,16 +304,30 @@ end
 
 function set.remote(s , time, noack)
 	local id = tmr.VIRT8
-	local time = time or 1000000	--min für VIRT-TMR: 250000
+	local time = time or 250000	--min für VIRT-TMR: 250000
 	if s == "on" then
 		tmr.set_match_int( id, time, tmr.INT_CYCLIC );
-		cpu.sei( cpu.INT_TMR_MATCH, id )
+		cpu.sei( cpu.INT_TMR_MATCH, id )		
+		set.debug("off", true)
 		if not noack then com.write(ack) end
+		
 	elseif s == "off" then
-		kit.reset("merge")
 		kit.reset("custom")
 		tmr.set_match_int( id, 0, tmr.INT_CYCLIC );
 		cpu.cli( cpu.INT_TMR_MATCH, id )
+		set.debug("off", true)
+		if not noack then com.write(ack) end
+		
+	end
+end
+
+function set.debug(s, noack)
+	if s == "on" then
+		t.debug = true
+		if not noack then com.write(ack) end
+	elseif s == "off" then
+		t.debug = false
+		kit.reset("custom")
 		if not noack then com.write(ack) end
 	end
 end

@@ -25,7 +25,7 @@ function findText(text, t)
 	local tstart = tmr.start( timer_id )
 	while time > tmr.getdiffnow( timer_id, tstart ) do
 		input = com.read()
-		if input then
+		if input and not( text == "" ) then
 			if input:find(text) then 
 				return input
 			end

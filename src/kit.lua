@@ -133,7 +133,7 @@ end
 -- so wird der custom-Wert ins Feld "merge" geschrieben. Ansonsten erhält das
 -- Feld "merge" der reale Wert.
 
-local function merge()
+function merge()
 	for _,i in pairs(conf.get("update", "*t")) do
 		if IO[i].custom then
 			IO[i].merge = IO[i].custom
@@ -153,6 +153,8 @@ function reset(key)			--beim Program aus / ändern von _G.const.update
 	for i in pairs(IO) do
 		IO[i][key] = value
 	end
+	merge()
+	update()
 end
 
 -------------------------------------------------------------------------------

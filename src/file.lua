@@ -12,7 +12,7 @@ module(..., package.seeall)
 require "com"
 
 local BLOCKSIZE = 64		--ohne checksumme
-local TIMEOUT = 2000000
+local TIMEOUT = 3000000
 local TIMERID = nil			--Systemtimer
 local ack = "ack\r\n"
 local nak = "nak\r\n"

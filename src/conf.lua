@@ -63,7 +63,7 @@ local function default()
 	_G.const = {
 		boardID = {"none"},
 		devName = {"SARHA"},
-		wlan = {"Not Your Business", "LM3S9D92embeddedluaX"},	--SSID, Password
+		wlan = {"SSID", "PASSWORD"},	--SSID, Password
 		timezone = {"2"},
 		timeserver = {"62.2.85.147"},
 		cfg		= {"0", "0", "0"},								--Name, CreateID, ChangeID

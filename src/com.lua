@@ -47,6 +47,7 @@ function checkconnect(input)
 		if connected then
 			print("disconnected")
 			control.set.remote("off", nil, true)	--true -> kein ack senden
+			control.set.debug("off", true)
 		end
 		connected = false
 	end
