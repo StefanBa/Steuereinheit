@@ -9,17 +9,17 @@
 
 module(..., package.seeall)
 
-require "kit"
 require "list"
 require "control"
 
 uart_id = 0
-status = "normal"					--status kann sein: "normal", "cmd", file
+status = "normal"					--status kann sein: "normal" oder "cmd"
 OPEN = "*OPEN*"
 CLOS = "*CLOS*"
 
 local sendList = list.List:new()
-local recvList = list.List:new()
+local recvListcmd = list.List:new()
+local recvListnorm = list.List:new()
 local connected = false				--init-Wert default: false (zu Debugzwecken: true)
 local END1 = "\r"
 local END2 = "\n"
@@ -80,18 +80,21 @@ end
 -- @return		splitter Tabelle mit Parameter (status "normal")
 
 function read()
-	local recv = recvList:poplast()
-	if recv == nil then return recv end
-	
+	local recv
+
 	if status == "cmd" then
+		recv = recvListcmd:poplast()
 		return recv
+		
+	elseif status == "normal" then
+		recv = recvListnorm:poplast()
+		if recv == nil then return end
+		local splitter = {}
+		for k in recv:gmatch("[^%"..SEP.."]+") do
+			splitter[#splitter + 1] = k
+		end
+		return splitter
 	end
-	
-	local splitter = {}
-	for k in recv:gmatch("[^%"..SEP.."]+") do
-		splitter[#splitter + 1] = k
-	end
-	return splitter
 end
 
 -------------------------------------------------------------------------------
@@ -128,20 +131,19 @@ function recv()
 		coroutine.yield()					  	
 	end
 	
-	if status == "cmd" then								--falls WLAN-Modul im cmd-Mode
-		print( "cmd received:", input )
-		recvList:pushfirst( input )
-		return
+	if not connected and not(status == "cmd")then
+		print( "not received:" , input)
 	end
 	
-	if not connected then
-		print( "not received:" , input)
-		return
+	if status == "cmd" then								--falls WLAN-Modul im cmd-Mode
+		print( "cmd received:", input )
+		recvListcmd:pushfirst( input )
+	
+	elseif status == "normal" and connected then		--falls WLAN-Modul im normal-Mode
+		input = input:sub(1,-2)                     	--\r abschneiden
+		print( "received:" , input )
+		recvListnorm:pushfirst( input )
 	end
-		
-	input = input:sub(1,-2)                     --\r abschneiden
-	print( "received:" , input )
-	recvList:pushfirst( input )
 end
 
 -------------------------------------------------------------------------------

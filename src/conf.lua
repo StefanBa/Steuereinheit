@@ -10,7 +10,6 @@
 module(..., package.seeall)
 
 require "kit"
-require "control"
 
 _G.const = {}
 
