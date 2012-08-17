@@ -89,7 +89,7 @@ local function readFromFile(file)
 		local input = uart.read( com.uart_id, ack:len(), TIMEOUT, TIMERID )
 		if input == ack then
 			return true
-		else
+		elseif input == nak then
 			return false
 		end
 	end

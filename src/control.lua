@@ -73,7 +73,7 @@ function set.devName(deviceId, nocmd)
 	cmd.on(nocmd)
 	cmd.set("set opt deviceid "..deviceId)
 	cmd.off(nocmd)
-	com.write(ack)
+	if not nocmd then com.write(ack) end
 end
 
 -------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ end
 -- Überprüfung, ob das gesampte File vorhanden ist.
 -- @param		s "on" für starten, "off" für stoppen
 
-function set.program(s)
+function set.program(s, noack)
 	if s == "on" then
 		local state = pcall( function ()		--programm in geschützter Umgebung starten
 			require"statemachine"
@@ -205,15 +205,19 @@ function set.program(s)
 	elseif s == "off" then
 		mode = "off"
 		_G.threadend = 4
-		--coroutine.yield()
-		--for i = 5, #threads do
-		--	threads[i] = nil
-		--end
+		coroutine.yield()
+		for i = 5, #threads do
+			threads[i] = nil
+		end
 		package.loaded["statemachine"] = nil		--unload prog
 		_G["statemachine"] = nil
 		kit.reset("custom")
+		kit.reset("merge")
 		print("program stoped")
-		com.write(ack)
+		if not noack then
+			com.write(ack)
+			print("ack from prog off")
+		end
 	else
 		return
 	end
@@ -254,7 +258,7 @@ end
 -- @param		filesize Grösse des Files
 
 function set.file(filename, filesize)
-	set.program("off")		--Programm anhalten bei Config- oder Statemachine empfang
+	set.program("off", true)		--Programm anhalten bei Config- oder Statemachine empfang
 	local success = file.recv(filename, filesize)
 	filetermination(success)
 end
